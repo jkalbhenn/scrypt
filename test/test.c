@@ -81,5 +81,11 @@ void main () {
     printf("%s\n", "success - all tests passed.");
   }
 */
-  printf("%s\n", scrypt_to_string("", 0, 0, 0, 0, 0));
+
+  uint8_t* str;
+  size_t str_len = 0;
+  int status;
+  status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
+  display_byte_array(str, str_len);
+  //printf("%s\n", str);
 }
