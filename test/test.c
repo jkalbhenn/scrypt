@@ -76,7 +76,10 @@ char test_4 () {
 }
 
 void main () {
-  if (test_1() && test_2() && test_3() && test_4()) {
+/*
+  if (test_1() && test_2() && test_3()) {
     printf("%s\n", "success - all tests passed.");
   }
+*/
+  printf("%s\n", scrypt_to_string("", 0, 0, 0, 0, 0));
 }

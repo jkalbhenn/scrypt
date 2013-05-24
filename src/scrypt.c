@@ -255,25 +255,42 @@ err0:
   return (4);
 }
 
-static int scrypt_with_defaults (
-  const uint8_t* password, size_t password_len,
-  uint8_t* salt, size_t salt_len, uint64_t N, uint32_t r, uint32_t p, uint8_t* res, size_t res_len)
-{
+int set_defaults (uint8_t* salt, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
   int status;
+  int logN;
   uint32_t default_r;
   uint32_t default_p;
-  int logN;
   if (!(N && r && p)) {
     status = pickparams(0, 0.5, 300.0, &logN, &default_r, &default_p); if (status) { return(status); }
-    if (!N) { N = (uint64_t)(1) << logN; }
-    if (!r) { r = default_r; }
-    if (!p) { p = default_p; }
+    if (!N) { *N = (uint64_t)(1) << logN; }
+    if (!r) { *r = default_r; }
+    if (!p) { *p = default_p; }
   }
   if (!salt) { status = getsalt(salt); if (status) { return(status); }}
-  if (!res) { res = malloc(16); res_len = 16; if (!res) { return(3); }}
-  return scrypt(password, password_len, salt, salt_len, N, r, p, res, res_len);
+  if (!*size) { *size = 16; }
+  return(0);
 }
 
+static struct basE91 b91;
 
-//static struct basE91 b91;
-//printf("", N, r, p)
+uint8_t* base91_encode (void* input, size_t size) {
+  uint8_t* output = malloc(600);
+  basE91_encode(&b91, input, size, output);
+  basE91_encode_end(&b91, output);
+  return(output);
+}
+
+uint8_t* scrypt_to_string (uint8_t* password, uint8_t* salt, uint64_t N, uint32_t r, uint32_t p, size_t size) {
+  set_defaults(salt, &size, &N, &r, &p);
+  uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
+  int status = scrypt(password, strlen(password), salt, strlen(salt), N, r, p, derived_key, size);
+  if (status) { printf("error"); exit(status); }
+  uint8_t* res = malloc(600);
+  sprintf(res, "%s-%s-%s-%s-%s\n",
+    base91_encode(derived_key, size),
+    base91_encode(salt, strlen(salt)),
+    base91_encode(&N, sizeof(N)),
+    base91_encode(&r, sizeof(r)),
+    base91_encode(&p, sizeof(p)));
+  return(res);
+}
