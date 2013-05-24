@@ -1,15 +1,15 @@
-This is a specification and planned as an implementation of a library and command-line line utility for creating scrypt password key derivations.
+This is a specification and planned as an implementation of a library and command-line line utility for creating scrypt password key derivations. The used programming language is supposed to be c.
 
 You may help creating this program, for example by creating the command-line interface, improving portability or doing other work. Fork, create issues or contact me by email.
 
 == command-line interface
 {{{
 scrypt
-  password [salt target-size cost block-size parallelisation] -> stdout
-  input [salt size n r p] -> stdout
+  password [salt derived-key-length cpu\memory-cost block-size parallelisation] -> stdout
+  password [salt size n r p] -> stdout
   base91 [base91 integer integer integer integer] -> output-format
 
-use of default values indicated by -
+use of default values may be indicated by -
 }}}
 == output-format
 {{{
@@ -22,8 +22,8 @@ fields
 
 == defaults
 {{{
-salt generated from /dev/urandom
-estimate cost, block-size and parallelisation
+salt auto-generated
+cost, block-size and parallelisation-parameter estimated
 }}}
 
 == structure
@@ -38,17 +38,16 @@ scrypt
 
 == advanced command-line interface
 {{{
-read password from file or stdin
-read salt from file
+read binary password from file or stdin
+read binary salt from file
 write to file or stdout
 
-scrypt input [salt size n r p] [-> stdout]
+scrypt password [salt size n r p] [-> stdout]
   -i inputfile
   -s saltfile
   -o outfile
   -a ascii input (instead of base91)
   -h help
-
 }}}
 == rationale
 === field order
@@ -62,7 +61,7 @@ key and salt most likely have fixed length
 {{{
 base91 leaves only three possible characters, including - and '
 don't use a cryptic symbol if a less cryptic symbol does the job, prefer - over $ for example
-the salt should be binary and the password may be binary too
+the salt should possibly use the full binary range and the password may too
 }}}
 === original scrypt utility
 {{{
