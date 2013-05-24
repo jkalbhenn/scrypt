@@ -2,7 +2,7 @@ This is a specification and planned as an implementation of a library and comman
 
 You may help creating this program, for example by creating the command-line interface, improving portability or doing other work. Fork, create issues or contact me by email.
 
-= command-line interface
+* command-line interface
 scrypt
   password [salt target-size cost block-size parallelisation] -> stdout
   input [salt size n r p] -> stdout
@@ -10,18 +10,18 @@ scrypt
 
 use of default values indicated by -
 
-= output-format
+* output-format
 base91 encoded fields
 fields
   key salt n r p
   delimited by -
   variable-length
 
-= defaults
+* defaults
 salt generated from /dev/urandom
 estimate cost, block-size and parallelisation
 
-= structure
+* structure
 libscrypt
   pickparams
   checkparams
@@ -29,7 +29,7 @@ libscrypt
   scrypt-utility
 scrypt
 
-= advanced command-line interface
+* advanced command-line interface
 read password from file or stdin
 read salt from file
 write to file or stdout
@@ -41,16 +41,16 @@ scrypt input [salt size n r p] [-> stdout]
   -a ascii input (instead of base91)
   -h help
 
-= rationale
-== field order
+* rationale
+** field order
 a program may split key and salt and use fixed n-r-p values
 maybe you use a fixed n-r-p setup for all passwords
 maybe you want to use only the key, and store or have already stored the salt somewhere else
 key and salt most likely have fixed length
-== field separator
+** field separator
 base91 leaves only three possible characters, including - and '
 don't use a cryptic symbol if a less cryptic symbol does the job, prefer - over $ for example
 the salt should be binary and the password may be binary too
-== original scrypt utility
+** original scrypt utility
 this interface may be combined with the original scrypt utility, but the implementation
 inside a library of all features is recommended for clear feature separation.
