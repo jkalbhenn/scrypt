@@ -1,4 +1,4 @@
 exports {
-  global: scrypt, getsalt, pickparams;
+  global: scrypt; scrypt_with_defaults;
   local: *;
 };

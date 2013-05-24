@@ -46,17 +46,24 @@ scrypt
 
 == Rationale
 === Field order
-* A program may use the output-string and split key and salt and use fixed (N r p) values. For example if the program only needs the key, and stores or has already stored the salt somewhere else
-* Key and salt have a more predictable length, which makes it simpler to extract it from the beginning
+* A program may use the output-string to split key and salt or use fixed (N r p) values. For example if the program only needs the key, and stores or has already stored the salt somewhere else
+* Key and salt have a more predictable length, which makes it simpler to extract from the beginning
 
 === Field separator
 * Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefer - over $
 * Base91 leaves "-" for use
 
 === Base91
-* It should be possible to use the full binary range for password and salt using the command-line.
+* It should be possible to use the full binary range for password and salt using the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set, "- ' \"
-* The encoding\decoding algorithm is very simple, it doesn't really matter how common this format is
+* The encoding\decoding algorithm is very simple, it doesn't really matter how common the format is
 
 === Original scrypt utility
 This interface may be combined with the original scrypt file encryption utility, but the implementation as a library of all features is recommended for clear feature separation.
+
+== External links
+http://code.google.com/p/scrypt/
+http://base91.sourceforge.net/
+
+== See also
+https://github.com/jkalbhenn/libscrypt-minimal

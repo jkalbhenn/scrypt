@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "memlimit.c"
+#include "scrypt/scrypt.c"
+#include "base91/base91.c"
 
 #ifdef HAVE_CLOCK_GETTIME
 
@@ -113,7 +115,7 @@ cpuperf(double * opps)
 		return (2);
 	do {
 		/* Do an scrypt. */
-		if (scrypt_primitive_hash_password(NULL, 0, NULL, 0, 16, 1, 1, NULL, 0))
+		if (scrypt(NULL, 0, NULL, 0, 16, 1, 1, NULL, 0))
 			return (3);
 
 		/* Has the clock ticked? */
@@ -128,7 +130,7 @@ cpuperf(double * opps)
 		return (2);
 	do {
 		/* Do an scrypt. */
-		if (scrypt_primitive_hash_password(NULL, 0, NULL, 0, 128, 1, 1, NULL, 0))
+		if (scrypt(NULL, 0, NULL, 0, 128, 1, 1, NULL, 0))
 			return (3);
 
 		/* We invoked the salsa20/8 core 512 times. */
@@ -273,5 +275,5 @@ static int scrypt_with_defaults (
 }
 
 
-static struct basE91 b91;
-printf("", N, r, p)
+//static struct basE91 b91;
+//printf("", N, r, p)
