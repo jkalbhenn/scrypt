@@ -1,70 +1,62 @@
-This is a specification and planned as an implementation of a library and command-line line utility for creating scrypt password key derivations. The used programming language is supposed to be c.
+A specification and implementation of a library and command-line line utility for creating scrypt password key derivations. The used programming language is C.
 
-You may help creating this program, for example by creating the command-line interface, improving portability or doing other work. Fork, create issues or contact me by email.
+You may help creating this program by improving portability, commenting or doing other work. Fork, create issues or contact me by email.
 
 == command-line interface
 {{{
 scrypt
-  password [salt derived-key-length cpu\memory-cost block-size parallelisation] -> stdout
-  password [salt size n r p] -> stdout
+  password [salt derived-key-length cost-parameter block-size-parameter parallelisation-parameter] -> stdout
   base91 [base91 integer integer integer integer] -> output-format
-
-use of default values may be indicated by -
-}}}
-== output-format
-{{{
-base91 encoded fields
-fields
-  key salt n r p
-  delimited by -
-  variable-length
 }}}
 
-== defaults
-{{{
-salt auto-generated
-cost, block-size and parallelisation-parameter estimated
-}}}
+* use of default values with "-"
 
-== structure
-{{{
-libscrypt
-  pickparams
-  checkparams
-  scrypt-kdf
-  scrypt-utility
-scrypt
-}}}
+=== advanced
+* read binary password from file or stdin
+* read binary salt from file
+* write to file or stdout
 
-== advanced command-line interface
 {{{
-read binary password from file or stdin
-read binary salt from file
-write to file or stdout
-
-scrypt password [salt size n r p] [-> stdout]
+scrypt password [salt size N r p] [-> stdout]
   -i inputfile
   -s saltfile
   -o outfile
   -a ascii input (instead of base91)
   -h help
 }}}
-== rationale
-=== field order
+
+== output-format
+* base91 encoded field values
+* delimited by -
+* order: key salt N r p
+
+== defaults
+* salt read from /dev/urandom
+* (N r p) parameters estimated by testing cpuspeed and free memory
+
+== structure
 {{{
-a program may split key and salt and use fixed n-r-p values
-maybe you use a fixed n-r-p setup for all passwords
-maybe you want to use only the key, and store or have already stored the salt somewhere else
-key and salt most likely have fixed length
+libscrypt
+  pickparams
+  checkparams
+  scrypt
+  scrypt-utility
+scrypt
 }}}
-=== field separator
-{{{
-base91 leaves only three possible characters, including - and '
-don't use a cryptic symbol if a less cryptic symbol does the job, prefer - over $ for example
-the salt should possibly use the full binary range and the password may too
-}}}
-=== original scrypt utility
-{{{
-this interface may be combined with the original scrypt utility, but the implementation
-inside a library of all features is recommended for clear feature separation.
-}}}
+
+== Rationale
+=== Field order
+* A program may use the output-string and split key and salt and use fixed (N r p) values. For example if the program only needs the key, and stores or has already stored the salt somewhere else
+* Key and salt have a more predictable length, which makes it simpler to extract it from the beginning
+
+=== Field separator
+* Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefer - over $
+* Base91 leaves "-" for use
+
+=== Base91
+* It should be possible to use the full binary range for password and salt using the command-line.
+* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set, "- ' \"
+* The encoding\decoding algorithm is very simple, it doesn't really matter how common this format is
+
+=== Original scrypt utility
+This interface may be combined with the original scrypt file encryption utility, but the implementation as a library of all features is recommended for clear feature separation.
