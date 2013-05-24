@@ -278,8 +278,9 @@ int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, u
 static struct basE91 b91;
 
 #define base91_encode_concat(output, index, input, size) \
-  index += basE91_encode(&b91, input, size, output); \
-  index += basE91_encode_end(&b91, output)
+  basE91_init(&b91); \
+  index += basE91_encode(&b91, input, size, output + index); \
+  index += basE91_encode_end(&b91, output + index)
 
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
@@ -312,7 +313,7 @@ uint8_t* scrypt_strerror (int number) {
   }
 }
 
-#define add_dash(buf, len) *(*buf + (*len - 2)) = '-';
+#define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
 
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
@@ -323,7 +324,7 @@ int scrypt_to_string (
   uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { printf("error"); exit(status); }
-  *res = (uint8_t*)calloc(3 * (size + strlen(salt) + sizeof(N) + sizeof(r) + sizeof(p)), 1);
+  *res = (uint8_t*)malloc((3 * (size + strlen(salt) + sizeof(N) + sizeof(r) + sizeof(p))) + 1);
   base91_encode_concat(*res, *res_len, derived_key, size);
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, salt, salt_len);
@@ -333,6 +334,6 @@ int scrypt_to_string (
   base91_encode_concat(*res, *res_len, &r, sizeof(r));
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, &p, sizeof(p));
-//  *(*res + (*res_len)) = 0;
+  *(*res + *res_len) = 0;
   return(0);
 }
