@@ -1,0 +1,4 @@
+exports {
+  global: scrypt, getsalt, pickparams;
+  local: *;
+};
