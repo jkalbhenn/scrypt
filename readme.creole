@@ -12,8 +12,8 @@ Possible enhancements
 * Arguments aren't checked for validity
 
 == Installation
-- ./build/make.sh
-- ./build/install.sh [prefix]
+# ./build/make.sh
+# ./build/install.sh [prefix]
 
 * Installs a library under {prefix}/usr/lib/libscrypt.so
 * Installs a header file under {prefix}/usr/include/scrypt.h
@@ -78,8 +78,8 @@ scrypt
 
 == Programming interface
 === Usage
-- In C, "#include <scrypt.h>"
-- Setup linking with "libscrypt"
+# In C, "#include <scrypt.h>"
+# Setup linking with "libscrypt"
 
 === scrypt
 {{{
@@ -141,9 +141,9 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
 
 == License
-base91 implementation - bsd 3-clause
-scrypt implementation and utility code - bsd 2-clause
-rest - gpl3
+* base91 implementation - bsd 3-clause
+* scrypt implementation and utility code - bsd 2-clause
+* rest - gpl3
 
 == Rationale
 === Field order
