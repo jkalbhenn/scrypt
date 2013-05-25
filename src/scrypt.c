@@ -305,19 +305,6 @@ int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, u
   return(0);
 }
 
-static struct basE91 b91;
-
-#define base91_encode_concat(output, index, input, size) \
-  basE91_init(&b91); \
-  index += basE91_encode(&b91, input, size, output + index); \
-  index += basE91_encode_end(&b91, output + index)
-
-size_t base91_decode(uint8_t* output, uint8_t* input, size_t size) {
-  basE91_init(&b91);
-  size_t len = basE91_decode(&b91, input, size, output);
-  return(len + basE91_decode_end(&b91, output + len));
-}
-
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
   case 1:
@@ -349,6 +336,19 @@ uint8_t* scrypt_strerror (int number) {
   }
 }
 
+static struct basE91 b91;
+
+#define base91_encode_concat(output, index, input, size) \
+  basE91_init(&b91); \
+  index += basE91_encode(&b91, input, size, output + index); \
+  index += basE91_encode_end(&b91, output + index)
+
+size_t base91_decode(uint8_t* output, uint8_t* input, size_t size) {
+  basE91_init(&b91);
+  size_t len = basE91_decode(&b91, input, size, output);
+  return(len + basE91_decode_end(&b91, output + len));
+}
+
 #define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
 
 int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, uint8_t** salt, uint64_t* N, uint32_t* r, uint32_t* p) {
@@ -377,9 +377,13 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, uint8_t** 
     }
     index += 1;
   }
-  base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
+  *p = *p >> base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
   return(0);
 }
+
+#define number_length_b32(arg) arg <= 0xff ? 1 : arg <= 0xffff ? 2 : arg <= 0xffffff ? 3 : 4
+#define number_length_b64(arg) arg <= 0xff ? 1 : arg <= 0xffff ? 2 : arg <= 0xffffff ? 3 : arg <= 0xffffffff ? 4 : \
+    arg <= 0xffffffffff ? 5 : arg <= 0xffffffffffff ? 6 : arg <= 0xffffffffffffff ? 7 : 8
 
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
@@ -387,6 +391,7 @@ int scrypt_to_string (
 {
   int status;
   status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
+  printf("N %lu, r %x, p %x\n", N, r, p);
   uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { printf("error"); exit(status); }
@@ -395,11 +400,11 @@ int scrypt_to_string (
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, salt, salt_len);
   add_dash(res, res_len);
-  base91_encode_concat(*res, *res_len, &N, sizeof(N));
+  base91_encode_concat(*res, *res_len, &N, number_length_b64(N));
   add_dash(res, res_len);
-  base91_encode_concat(*res, *res_len, &r, sizeof(r));
+  base91_encode_concat(*res, *res_len, &r, number_length_b32(r));
   add_dash(res, res_len);
-  base91_encode_concat(*res, *res_len, &p, sizeof(p));
+  base91_encode_concat(*res, *res_len, &p, number_length_b32(p));
   *(*res + *res_len) = 0;
   return(0);
 }

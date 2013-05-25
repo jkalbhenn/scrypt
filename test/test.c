@@ -85,13 +85,13 @@ void main () {
   size_t str_len = 0;
   int status;
   status = scrypt_to_string("", 0, 0, 0, 0, 16, 1, 1, &str, &str_len);
-  //display_byte_array(str, str_len);
-  printf("%s\n", str);
   uint8_t* salt;
   uint8_t* key;
   uint64_t N;
   uint32_t r;
   uint32_t p;
   scrypt_parse_string(str, str_len, &key, &salt, &N, &r, &p);
-  printf("%lu %d %d", N, r, p);
+  //display_byte_array(str, str_len);
+  printf("%s\n", str);
+  printf("N %lu, r %x, p %x\n", N, r, p);
 }
