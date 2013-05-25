@@ -2,12 +2,21 @@ A library and command-line line utility for creating scrypt password key derivat
 
 You may help creating this program by improving portability, commenting or doing other work. Fork, create issues or contact me by email.
 
+Uses code from the "scrypt" file encryption utility written by C. Percival.
+
 == Status
-Should work on linux, but misses broader user testing.
+Should work on linux, but misses broad user testing.
 
 Possible enhancements
 * Portability
 * Arguments aren't checked for validity
+
+== Installation
+- ./build/make.sh
+- ./build/install.sh [prefix]
+
+* Installs a library under {prefix}/usr/lib/libscrypt.so
+* Installs a header file under {prefix}/usr/include/scrypt.h
 
 == Command-line interface
 {{{
@@ -38,7 +47,7 @@ scrypt testpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*
 success
 }}}
 
-=== advanced (not implemented)
+=== Advanced (not implemented)
 * Read binary password from file or stdin
 * Read binary salt from file
 * Write to file or stdout
@@ -48,16 +57,16 @@ success
   -o|outfile
 }}}
 
-== output-format
+== Output-format
 * Base91 encoded field values
 * Delimited by -
 * Order: key salt N r p
 
-== defaults
+== Defaults
 * Salt read from /dev/urandom
 * (N r p) parameters estimated by testing cpuspeed and free memory
 
-== structure
+== Structure
 {{{
 libscrypt
   scrypt
@@ -65,6 +74,70 @@ libscrypt
   scrypt_set_defaults
   scrypt_to_string
 scrypt
+}}}
+
+== Programming interface
+=== Usage
+- In C, "#include <scrypt.h>"
+- Setup linking with "libscrypt"
+
+=== scrypt
+{{{
+int scrypt (
+  const uint8_t * password, size_t password_len, const uint8_t * salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, uint8_t * res, size_t res_len);
+}}}
+
+Implementation of the fundamental scrypt key derivation function.
+
+=== scrypt_to_string
+{{{
+int scrypt_to_string (
+  uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len);
+}}}
+
+Creates a hash string like the command-line utility.
+
+==== Example call
+{{{
+uint8_t* res;
+size_t res_len;
+int status;
+uint8_t* password = 0;
+uint8_t* salt = 0;
+size_t password_len = 0;
+size_t salt_len = 0;
+size_t size = 0;
+uint64_t N = 0;
+uint32_t r = 0;
+uint32_t p = 0;
+
+status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+}}}
+
+=== scrypt_parse_string
+{{{
+int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
+}}}
+
+==== Example call
+Variable initialisations implied, see above.
+{{{
+status = scrypt_parse_string(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
+}}}
+
+=== scrypt_set_defaults
+{{{
+int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p);
+}}}
+
+Variables are updated with defaults if set to 0.
+Eventually gets random salt from "/dev/urandom" and picks arguments by measuring cpu performance and free memory.
+
+==== Example call
+{{{
+status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
 
 == Rationale
@@ -86,8 +159,6 @@ scrypt
 This interface could be combined with the original scrypt file encryption utility either by writing a wrapper or extending the library with file encryption features.
 
 == External links
-http://code.google.com/p/scrypt/
-http://base91.sourceforge.net/
-
-== See also
-https://github.com/jkalbhenn/libscrypt-minimal
+* http://code.google.com/p/scrypt/
+* http://base91.sourceforge.net/
+* http://www.tarsnap.com/scrypt.html

@@ -200,17 +200,17 @@ smix(uint8_t * B, size_t r, uint64_t N, uint8_t * V, uint8_t * XY)
 }
 
 /**
- * scrypt (passwd, passwdlen, salt, saltlen, N, r, p, buf, buflen):
+ * scrypt (passwd, passwdlen, salt, saltlen, N, r, p, res, res_len):
  * Compute scrypt(passwd[0 .. passwdlen - 1], salt[0 .. saltlen - 1], N, r,
- * p, buflen) and write the result into buf.  The parameters r, p, and buflen
- * must satisfy r * p < 2^30 and buflen <= (2^32 - 1) * 32.  The parameter N
+ * p, res_len) and write the result into res.  The parameters r, p, and res_len
+ * must satisfy r * p < 2^30 and res_len <= (2^32 - 1) * 32.  The parameter N
  * must be a power of 2.
  *
  * Return 0 on success; or -1 on error.
  */
-int scrypt (const uint8_t * source, size_t sourcelen,
-  const uint8_t * salt, size_t saltlen, uint64_t N, uint32_t r, uint32_t p,
-  uint8_t * buf, size_t buflen)
+int scrypt (
+  const uint8_t * password, size_t password_len, const uint8_t * salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, uint8_t * res, size_t res_len)
 {
   uint8_t * B;
   uint8_t * V;
@@ -218,7 +218,7 @@ int scrypt (const uint8_t * source, size_t sourcelen,
   uint32_t i;
 
 #if SIZE_MAX > UINT32_MAX
-  if (buflen > (((uint64_t)(1) << 32) - 1) * 32) {
+  if (res_len > (((uint64_t)(1) << 32) - 1) * 32) {
     errno = EFBIG;
     goto err0;
   }
@@ -245,7 +245,7 @@ int scrypt (const uint8_t * source, size_t sourcelen,
   if ((V = malloc(128 * r * N)) == NULL) goto err2;
 
   /* 1: (B_0 ... B_{p-1}) <-- PBKDF2(P, S, 1, p * MFLen) */
-  PBKDF2_SHA256(source, sourcelen, salt, saltlen, 1, B, p * 128 * r);
+  PBKDF2_SHA256(password, password_len, salt, salt_len, 1, B, p * 128 * r);
 
   /* 2: for i = 0 to p - 1 do */
   for (i = 0; i < p; i++) {
@@ -254,7 +254,7 @@ int scrypt (const uint8_t * source, size_t sourcelen,
   }
 
   /* 5: DK <-- PBKDF2(P, B, 1, dkLen) */
-  PBKDF2_SHA256(source, sourcelen, B, p * 128 * r, 1, buf, buflen);
+  PBKDF2_SHA256(password, password_len, B, p * 128 * r, 1, res, res_len);
 
   free(V);
   free(XY);
