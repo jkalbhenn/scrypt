@@ -1,5 +1,5 @@
 /*-
- * This file contains code under the following license terms, with little modifications, up to about line 300:
+ * This file contains code under the following license terms (up to line 280):
  *
  * Copyright 2009 Colin Percival
  * All rights reserved.
@@ -280,30 +280,10 @@ err0:
   return (4);
 }
 
+#include <math.h>
+#include "util.c"
 #define default_salt_length 8
 #define default_key_length 16
-
-int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
-  int status;
-  if (!(*N && *r && *p)) {
-    int logN;
-    uint32_t default_r;
-    uint32_t default_p;
-    status = pickparams(0, 0.5, 2.0, &logN, &default_r, &default_p); if (status) { return(status); }
-    if (!*N) { *N = (uint64_t)(1) << logN; }
-    if (!*r) { *r = default_r; }
-    if (!*p) { *p = default_p; }
-  }
-  if (!*salt) {
-    uint8_t default_salt[default_salt_length];
-    status = getsalt(default_salt);
-    if (status) { return(status); }
-    *salt = default_salt;
-    *salt_len = default_salt_length;
-  }
-  if (!*size) { *size = default_key_length; }
-  return(0);
-}
 
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
@@ -336,20 +316,27 @@ uint8_t* scrypt_strerror (int number) {
   }
 }
 
-static struct basE91 b91;
-
-#define base91_encode_concat(output, index, input, size) \
-  basE91_init(&b91); \
-  index += basE91_encode(&b91, input, size, output + index); \
-  index += basE91_encode_end(&b91, output + index)
-
-size_t base91_decode(uint8_t* output, uint8_t* input, size_t size) {
-  basE91_init(&b91);
-  size_t len = basE91_decode(&b91, input, size, output);
-  return(len + basE91_decode_end(&b91, output + len));
+int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
+  int status;
+  if (!(*N && *r && *p)) {
+    int logN;
+    uint32_t default_r;
+    uint32_t default_p;
+    status = pickparams(0, 0.5, 2.0, &logN, &default_r, &default_p); if (status) { return(status); }
+    if (!*N) { *N = (uint64_t)(1) << logN; }
+    if (!*r) { *r = default_r; }
+    if (!*p) { *p = default_p; }
+  }
+  if (!*salt) {
+    uint8_t default_salt[default_salt_length];
+    status = getsalt(default_salt);
+    if (status) { return(status); }
+    *salt = default_salt;
+    *salt_len = default_salt_length;
+  }
+  if (!*size) { *size = default_key_length; }
+  return(0);
 }
-
-#define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
 
 int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
   size_t index = 0;
@@ -384,20 +371,12 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
   return(0);
 }
 
-#include <math.h>
-
-#define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
-#define number_length_b64(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : arg <= 0xffffffff ? 4u : \
-    arg <= 0xffffffffff ? 5u : arg <= 0xffffffffffff ? 6u : arg <= 0xffffffffffffff ? 7u : 8u)
-#define estimate_encoded_length(size, salt_len, N, r, p) (size_t)ceil(2.3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))
-
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
 {
   int status;
   status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
-  //printf("N %lu, r %x, p %x, password_len %d, salt_len %d, size %d\n", N, r, p, password_len, salt_len, size);
   uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
