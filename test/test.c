@@ -91,7 +91,7 @@ char test_scrypt_to_string () {
   status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
   if (status) { return(status); }
   scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
-  uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == 16) && (salt_len == 16));
+  uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == 32) && (salt_len == 16));
   free(str); free(key); free(salt);
   if (!res_1) { printf("failure scrypt_to_string_1"); return (0); }
   //test non-default values

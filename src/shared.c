@@ -1,3 +1,7 @@
+#define verbose 0
+#define default_salt_length 16u
+#define default_key_length 32u
+
 static __thread struct basE91 b91;
 #define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
 #define estimate_encoded_length(size, salt_len, N, r, p) (size_t)ceil(2.3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))

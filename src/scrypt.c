@@ -251,10 +251,7 @@ pickparams(size_t maxmem, double maxmemfrac, double maxtime,
 }
 
 #include <math.h>
-#include "util.c"
-//the default_salt_length should be equal or greater than the minimum size that can be read from /dev/urandom
-#define default_salt_length 16u
-#define default_key_length 32u
+#include "shared.c"
 
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
@@ -371,6 +368,9 @@ int scrypt_to_string (
 {
   int status;
   status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
+#if verbose
+  printf("with defaults: salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, size, salt_len);
+#endif
   if (status) { return(status); }
   uint8_t* derived_key = malloc(size); if (!derived_key) { return(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);

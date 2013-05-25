@@ -22,7 +22,7 @@
 #include <getopt.h>
 #include "scrypt.h"
 #include "base91/base91.c"
-#include "util.c"
+#include "shared.c"
 
 #define version "0.1"
 #define program_name "scrypt"
@@ -40,15 +40,6 @@ void display_help () {
     "  -h|--help  display this text and exit\n"
     "  -v|--version  output version information and exit\n");
 }
-
-void display_byte_array (uint8_t* arr, size_t len) {
-  size_t i;
-  for (i=0; i<len; i+=1) {
-    printf("%02x ", arr[i]);
-    if (!((i + 1) % 16) || (i == (len - 1))) { printf("\n"); }
-  }
-}
-
 
 int main (int argc, char **argv) {
   int ascii_input_flag = 0;
@@ -135,9 +126,11 @@ int main (int argc, char **argv) {
     size_t key_len;
     status = scrypt_parse_string(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
     if (status) { return(status); }
-    status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+#if verbose
+    printf("salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, key_len, salt_len);
+#endif
+    status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
     if (status) { return(status); }
-    display_byte_array(key, key_len);
     puts((memcmp(res, check_string, res_len) == 0) ? "success" : "failure");
   }
   else {
