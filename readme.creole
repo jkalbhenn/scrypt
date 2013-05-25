@@ -78,8 +78,8 @@ scrypt
 
 == Programming interface
 === Usage
-# In C, "#include <scrypt.h>"
-# Setup linking with "libscrypt"
+* When using C, "#include <scrypt.h>"
+* Setup linking with "libscrypt"
 
 === scrypt
 {{{
@@ -133,7 +133,6 @@ int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_
 }}}
 
 Variables are updated with defaults if set to 0.
-Eventually gets random salt from "/dev/urandom" and picks arguments by measuring cpu performance and free memory.
 
 ==== Example call
 {{{
@@ -141,14 +140,13 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
 
 == License
-* base91 implementation - bsd 3-clause
-* scrypt implementation and utility code - bsd 2-clause
-* rest - gpl3
+* Base91 implementation - bsd 3-clause
+* Scrypt implementation and utility code - bsd 2-clause
+* Rest - gpl3
 
 == Rationale
 === Field order
-* The fields are ordered corresponding to a supposed relevance for programs processing the output.
-  A program may use the output-string to split the key and salt and use fixed (N r p) values. It may use only the key, and store the salt somewhere else.
+* A program may use the output-string to split the key and salt and use fixed (N r p) values. It may use only the key, and store the salt somewhere else.
 * Key and salt have a more predictable length, which makes it simpler to extract from the beginning
 
 === Field separator
@@ -158,7 +156,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 === Base91
 * Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set, "- ' \"
-* The encoding\decoding algorithm is simple, it doesn't really matter how common the format is
+* The encoding\decoding algorithm is simple
 
 === Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility either by writing a wrapper or extending the library with file encryption features.
