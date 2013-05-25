@@ -90,18 +90,30 @@ char test_scrypt_to_string () {
   uint32_t p;
   //test setting of default values
   status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
+  if (status) { return(status); }
   scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
   uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == 16) && (salt_len == 8));
-  return(1);
   free(str); free(key); free(salt);
   if (!res_1) { printf("failure scrypt_to_string_1"); return (0); }
+  //test non-default values
   status = scrypt_to_string("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
+  if (status) { return(status); }
   scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
-  //free(str); free(key); free(salt);
-
-  //display_byte_array(str, str_len);
-  //printf("%s\n", str);
-  //printf("N %lu, r %x, p %x, salt-len %d, key-len %d\n", N, r, p, salt_len, key_len);
+  uint8_t exp[] = {
+    0x70, 0x23, 0xbd, 0xcb, 0x3a, 0xfd, 0x73, 0x48, 0x46, 0x1c, 0x06, 0xcd, 0x81, 0xfd, 0x38, 0xeb,
+    0xfd, 0xa8, 0xfb, 0xba, 0x90, 0x4f, 0x8e, 0x3e, 0xa9, 0xb5, 0x43, 0xf6, 0x54, 0x5d, 0xa1, 0xf2,
+    0xd5, 0x43, 0x29, 0x55, 0x61, 0x3f, 0x0f, 0xcf, 0x62, 0xd4, 0x97, 0x05, 0x24, 0x2a, 0x9a, 0xf9,
+    0xe6, 0x1e, 0x85, 0xdc, 0x0d, 0x65, 0x1e, 0x40, 0xdf, 0xcf, 0x01, 0x7b, 0x45, 0x57, 0x58, 0x87 };
+  uint8_t res_2 =
+    (memcmp("SodiumChloride", salt, salt_len) == 0)
+    && (key_len == 64) && (salt_len == 14)
+    && (memcmp(exp, key, key_len) == 0)
+    && (N == 16384) && (r == 8) && (p == 1);
+  free(str); free(key); free(salt);
+  if (!res_2) {
+    printf("failure scrypt_to_string_2 N %lu, r %x, p %x, salt-len %d, key-len %d\n", N, r, p, salt_len, key_len);
+  }
+  return(res_2);
 }
 
 void main () {

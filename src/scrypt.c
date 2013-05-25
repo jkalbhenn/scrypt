@@ -361,10 +361,10 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
       switch (count) {
       case 1:
 	previous_index = index;
-	*key = malloc(index / 2); if (!*key) { return(1); }
+	*key = malloc(index); if (!*key) { return(1); }
 	*key_len = base91_decode(*key, arg, index);
       case 2:
-	*salt = malloc((index - previous_index) / 3); if (!*salt) { return(1); }
+	*salt = malloc(index - previous_index); if (!*salt) { return(1); }
 	*salt_len = base91_decode(*salt, arg + previous_index, index - previous_index);
 	previous_index = index;
       case 3:
@@ -384,10 +384,12 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
   return(0);
 }
 
+#include <math.h>
+
 #define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
 #define number_length_b64(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : arg <= 0xffffffff ? 4u : \
     arg <= 0xffffffffff ? 5u : arg <= 0xffffffffffff ? 6u : arg <= 0xffffffffffffff ? 7u : 8u)
-#define estimate_encoded_length(size, salt_len, N, r, p) 3 * (size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p))
+#define estimate_encoded_length(size, salt_len, N, r, p) (size_t)ceil(2.3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))
 
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
@@ -399,7 +401,6 @@ int scrypt_to_string (
   uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
-  printf("estimated len: %lu", estimate_encoded_length(size, salt_len, N, r, p));
   *res = (uint8_t*)malloc(estimate_encoded_length(size, salt_len, N, r, p));
   if (!*res) { return(1); }
   *res_len = 0;
@@ -413,6 +414,5 @@ int scrypt_to_string (
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, &p, number_length_b32(p));
   *(*res + *res_len) = 0;
-  printf(" actual len: %lu\n", *res_len + 1);
   return(0);
 }
