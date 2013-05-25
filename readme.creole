@@ -9,7 +9,7 @@ Should work on linux, but misses broad user testing.
 
 Possible enhancements
 * Portability
-* Arguments aren't checked for validity
+* Checking arguments for validity
 
 == Installation
 # ./build/make.sh
