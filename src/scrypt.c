@@ -351,7 +351,7 @@ size_t base91_decode(uint8_t* output, uint8_t* input, size_t size) {
 
 #define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
 
-int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, uint8_t** salt, uint64_t* N, uint32_t* r, uint32_t* p) {
+int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
   size_t index = 0;
   uint8_t count = 0;
   size_t previous_index = 0;
@@ -361,29 +361,33 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, uint8_t** 
       switch (count) {
       case 1:
 	previous_index = index;
-	*key = malloc(index / 2);
-	base91_decode(*key, arg, index);
+	*key = malloc(index / 2); if (!*key) { return(1); }
+	*key_len = base91_decode(*key, arg, index);
       case 2:
-	*salt = malloc((index - previous_index) / 2);
-	base91_decode(*salt, arg + previous_index, index - previous_index);
+	*salt = malloc((index - previous_index) / 3); if (!*salt) { return(1); }
+	*salt_len = base91_decode(*salt, arg + previous_index, index - previous_index);
 	previous_index = index;
       case 3:
+	*N = 0;
 	base91_decode((uint8_t*)N, arg + previous_index, index - previous_index);
 	previous_index = index;
       case 4:
+	*r = 0;
 	base91_decode((uint8_t*)r, arg + previous_index, index - previous_index);
 	previous_index = index;
       }
     }
     index += 1;
   }
-  *p = *p >> base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
+  *p = 0;
+  base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
   return(0);
 }
 
-#define number_length_b32(arg) arg <= 0xff ? 1 : arg <= 0xffff ? 2 : arg <= 0xffffff ? 3 : 4
-#define number_length_b64(arg) arg <= 0xff ? 1 : arg <= 0xffff ? 2 : arg <= 0xffffff ? 3 : arg <= 0xffffffff ? 4 : \
-    arg <= 0xffffffffff ? 5 : arg <= 0xffffffffffff ? 6 : arg <= 0xffffffffffffff ? 7 : 8
+#define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
+#define number_length_b64(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : arg <= 0xffffffff ? 4u : \
+    arg <= 0xffffffffff ? 5u : arg <= 0xffffffffffff ? 6u : arg <= 0xffffffffffffff ? 7u : 8u)
+#define estimate_encoded_length(size, salt_len, N, r, p) 3 * (size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p))
 
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
@@ -391,11 +395,14 @@ int scrypt_to_string (
 {
   int status;
   status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
-  printf("N %lu, r %x, p %x\n", N, r, p);
+  //printf("N %lu, r %x, p %x, password_len %d, salt_len %d, size %d\n", N, r, p, password_len, salt_len, size);
   uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
-  if (status) { printf("error"); exit(status); }
-  *res = (uint8_t*)malloc((3 * (size + strlen(salt) + sizeof(N) + sizeof(r) + sizeof(p))) + 1);
+  if (status) { return(status); }
+  printf("estimated len: %lu", estimate_encoded_length(size, salt_len, N, r, p));
+  *res = (uint8_t*)malloc(estimate_encoded_length(size, salt_len, N, r, p));
+  if (!*res) { return(1); }
+  *res_len = 0;
   base91_encode_concat(*res, *res_len, derived_key, size);
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, salt, salt_len);
@@ -406,5 +413,6 @@ int scrypt_to_string (
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, &p, number_length_b32(p));
   *(*res + *res_len) = 0;
+  printf(" actual len: %lu\n", *res_len + 1);
   return(0);
 }

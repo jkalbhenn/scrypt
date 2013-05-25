@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <scrypt.h>
+
 
 void display_byte_array (uint8_t* arr, size_t len) {
   size_t i;
@@ -75,23 +77,35 @@ char test_4 () {
     exp, sizeof(exp), res, sizeof(res));
 }
 
-void main () {
-/*
-  if (test_1() && test_2() && test_3()) {
-  printf("%s\n", "success - all tests passed.");
-  }
-*/
+char test_scrypt_to_string () {
   uint8_t* str;
-  size_t str_len = 0;
+  size_t str_len;
   int status;
-  status = scrypt_to_string("", 0, 0, 0, 0, 16, 1, 1, &str, &str_len);
   uint8_t* salt;
+  size_t salt_len;
+  size_t key_len;
   uint8_t* key;
   uint64_t N;
   uint32_t r;
   uint32_t p;
-  scrypt_parse_string(str, str_len, &key, &salt, &N, &r, &p);
+  //test setting of default values
+  status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
+  scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
+  uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == 16) && (salt_len == 8));
+  return(1);
+  free(str); free(key); free(salt);
+  if (!res_1) { printf("failure scrypt_to_string_1"); return (0); }
+  status = scrypt_to_string("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
+  scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
+  //free(str); free(key); free(salt);
+
   //display_byte_array(str, str_len);
-  printf("%s\n", str);
-  printf("N %lu, r %x, p %x\n", N, r, p);
+  //printf("%s\n", str);
+  //printf("N %lu, r %x, p %x, salt-len %d, key-len %d\n", N, r, p, salt_len, key_len);
+}
+
+void main () {
+  if (test_scrypt_to_string() && test_1() && test_2()) {
+    printf("%s\n", "success - all tests passed.");
+  }
 }
