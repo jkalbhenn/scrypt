@@ -1,3 +1,33 @@
+/*-
+ * This file contains code under the following license terms, with little modifications, up to about line 300:
+ *
+ * Copyright 2009 Colin Percival
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * This file was originally written by Colin Percival as part of the Tarsnap
+ * online backup system.
+ */
 #include <sys/time.h>
 #include <stdio.h>
 #include <time.h>
@@ -282,6 +312,12 @@ static struct basE91 b91;
   index += basE91_encode(&b91, input, size, output + index); \
   index += basE91_encode_end(&b91, output + index)
 
+size_t base91_decode(uint8_t* output, uint8_t* input, size_t size) {
+  basE91_init(&b91);
+  size_t len = basE91_decode(&b91, input, size, output);
+  return(len + basE91_decode_end(&b91, output + len));
+}
+
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
   case 1:
@@ -314,6 +350,36 @@ uint8_t* scrypt_strerror (int number) {
 }
 
 #define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
+
+int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, uint8_t** salt, uint64_t* N, uint32_t* r, uint32_t* p) {
+  size_t index = 0;
+  uint8_t count = 0;
+  size_t previous_index = 0;
+  while (index < arg_len) {
+    if (*(arg + index) == '-') {
+      count += 1;
+      switch (count) {
+      case 1:
+	previous_index = index;
+	*key = malloc(index / 2);
+	base91_decode(*key, arg, index);
+      case 2:
+	*salt = malloc((index - previous_index) / 2);
+	base91_decode(*salt, arg + previous_index, index - previous_index);
+	previous_index = index;
+      case 3:
+	base91_decode((uint8_t*)N, arg + previous_index, index - previous_index);
+	previous_index = index;
+      case 4:
+	base91_decode((uint8_t*)r, arg + previous_index, index - previous_index);
+	previous_index = index;
+      }
+    }
+    index += 1;
+  }
+  base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
+  return(0);
+}
 
 int scrypt_to_string (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
