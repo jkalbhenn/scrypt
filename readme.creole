@@ -2,7 +2,7 @@ A library and command-line line utility for creating scrypt password key derivat
 
 You may help creating this program by improving portability, commenting or doing other work. Fork, create issues or contact me by email.
 
-Uses code from the "scrypt" file encryption utility written by C. Percival.
+Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, and the base91 implementation of Joachim Henke.
 
 == Status
 Should work on linux, but misses broad user testing.
@@ -139,6 +139,11 @@ Eventually gets random salt from "/dev/urandom" and picks arguments by measuring
 {{{
 status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
+
+== License
+base91 implementation - bsd 3-clause
+scrypt implementation and utility code - bsd 2-clause
+rest - gpl3
 
 == Rationale
 === Field order
