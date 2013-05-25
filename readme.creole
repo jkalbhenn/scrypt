@@ -32,6 +32,8 @@ options
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
+
+Beware that what looks like plain ascii encoded passwords in the examples is actually interpreted as base91. Use the "--ascii-input" option for actually using plain ascii.
 {{{
 scrypt testpassword
 }}}
