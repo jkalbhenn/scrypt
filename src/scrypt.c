@@ -1,5 +1,5 @@
 /*-
- * This file contains code under the following license terms (up to line 280):
+ * This file contains code under the following license terms (up to line 300):
  *
  * Copyright 2009 Colin Percival
  * All rights reserved.
@@ -250,40 +250,11 @@ pickparams(size_t maxmem, double maxmemfrac, double maxtime,
   return (0);
 }
 
-static int getsalt(uint8_t salt[32]) {
-  int fd;
-  ssize_t lenread;
-  uint8_t * buf = salt;
-  size_t buflen = 32;
-  /* Open /dev/urandom. */
-  if ((fd = open("/dev/urandom", O_RDONLY)) == -1) { goto err0; }
-
-  /* Read bytes until we have filled the buffer. */
-  while (buflen > 0) {
-    if ((lenread = read(fd, buf, buflen)) == -1) { goto err1; }
-
-    /* The random device should never EOF. */
-    if (lenread == 0) { goto err1; }
-
-    /* We're partly done. */
-    buf += lenread;
-    buflen -= lenread;
-  }
-
-  while (close(fd) == -1) {
-    if (errno != EINTR) { goto err0; }
-  }
-  return (0);
-err1:
-  close(fd);
-err0:
-  return (4);
-}
-
 #include <math.h>
 #include "util.c"
-#define default_salt_length 8
-#define default_key_length 16
+//the default_salt_length should be equal or greater than the minimum size that can be read from /dev/urandom
+#define default_salt_length 16u
+#define default_key_length 32u
 
 uint8_t* scrypt_strerror (int number) {
   switch (number) {
@@ -316,6 +287,31 @@ uint8_t* scrypt_strerror (int number) {
   }
 }
 
+int set_default_salt (uint8_t** salt) {
+  *salt = malloc(default_salt_length);
+  FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
+  size_t len = fread(*salt, default_salt_length, 1, file);
+  if (!len) { return(1); }
+  fclose(file); return (0);
+}
+
+/* scrypt-utility library code.
+
+   copyright 2013 Julian Kalbhenn <jkal@posteo.eu>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
   int status;
   if (!(*N && *r && *p)) {
@@ -328,10 +324,8 @@ int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, u
     if (!*p) { *p = default_p; }
   }
   if (!*salt) {
-    uint8_t default_salt[default_salt_length];
-    status = getsalt(default_salt);
+    status = set_default_salt(salt);
     if (status) { return(status); }
-    *salt = default_salt;
     *salt_len = default_salt_length;
   }
   if (!*size) { *size = default_key_length; }
@@ -377,7 +371,8 @@ int scrypt_to_string (
 {
   int status;
   status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
-  uint8_t* derived_key = malloc(size); if (!derived_key) { exit(1); }
+  if (status) { return(status); }
+  uint8_t* derived_key = malloc(size); if (!derived_key) { return(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
   *res = (uint8_t*)malloc(estimate_encoded_length(size, salt_len, N, r, p));
