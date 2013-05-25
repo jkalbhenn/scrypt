@@ -1,52 +1,76 @@
-A specification and implementation of a library and command-line line utility for creating scrypt password key derivations. The used programming language is C.
+A library and command-line line utility for creating scrypt password key derivations. The programming language used is C.
 
 You may help creating this program by improving portability, commenting or doing other work. Fork, create issues or contact me by email.
 
-== command-line interface
+== Status
+Should work on linux, but misses broader user testing.
+
+Possible enhancements
+* Portability
+* Arguments aren't checked for validity
+
+== Command-line interface
 {{{
-scrypt
-  password [salt derived-key-length cost-parameter block-size-parameter parallelisation-parameter] -> stdout
-  base91 [base91 integer integer integer integer] -> output-format
+scrypt [options ...] password [salt size N r p]
+                     base91 [base91 integer integer integer integer]
+
+options
+  -c|--check hash  tests if hash is derived from a password
+  -a|--ascii-input  password and salt arguments are ascii encoded
+  -h|--help  display this text and exit
+  -v|--version  output version information and exit
 }}}
 
-* use of default values with "-"
-
-=== advanced
-* read binary password from file or stdin
-* read binary salt from file
-* write to file or stdout
-
+=== Examples
+Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
 {{{
-scrypt password [salt size N r p] [-> stdout]
-  -i inputfile
-  -s saltfile
-  -o outfile
-  -a ascii input (instead of base91)
-  -h help
+scrypt testpassword
+}}}
+
+Custom values for salt and other parameters
+{{{
+scrypt testpassword testsalt 128 1024 8 1
+}}}
+
+Testing if a hash corresponds to a password
+{{{
+scrypt testpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*ZxwyY`6g5E)&TuAg!$[1NAC-9D_Fb-XLA-IA-QA'
+success
+}}}
+
+=== advanced (not implemented)
+* Read binary password from file or stdin
+* Read binary salt from file
+* Write to file or stdout
+{{{
+  -i|inputfile
+  -s|saltfile
+  -o|outfile
 }}}
 
 == output-format
-* base91 encoded field values
-* delimited by -
-* order: key salt N r p
+* Base91 encoded field values
+* Delimited by -
+* Order: key salt N r p
 
 == defaults
-* salt read from /dev/urandom
+* Salt read from /dev/urandom
 * (N r p) parameters estimated by testing cpuspeed and free memory
 
 == structure
 {{{
 libscrypt
-  pickparams
-  checkparams
   scrypt
-  scrypt-utility
+  scrypt_parse_string
+  scrypt_set_defaults
+  scrypt_to_string
 scrypt
 }}}
 
 == Rationale
 === Field order
-* A program may use the output-string to split key and salt or use fixed (N r p) values. For example if the program only needs the key, and stores or has already stored the salt somewhere else
+* The fields are ordered corresponding to a supposed relevance for programs processing the output.
+  A program may use the output-string to split the key and salt and use fixed (N r p) values. It may use only the key, and store the salt somewhere else.
 * Key and salt have a more predictable length, which makes it simpler to extract from the beginning
 
 === Field separator
@@ -54,12 +78,12 @@ scrypt
 * Base91 leaves "-" for use
 
 === Base91
-* It should be possible to use the full binary range for password and salt using the command-line
+* Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set, "- ' \"
-* The encoding\decoding algorithm is very simple, it doesn't really matter how common the format is
+* The encoding\decoding algorithm is simple, it doesn't really matter how common the format is
 
 === Original scrypt utility
-This interface may be combined with the original scrypt file encryption utility, but the implementation as a library of all features is recommended for clear feature separation.
+This interface could be combined with the original scrypt file encryption utility either by writing a wrapper or extending the library with file encryption features.
 
 == External links
 http://code.google.com/p/scrypt/

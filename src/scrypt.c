@@ -309,7 +309,7 @@ int set_default_salt (uint8_t** salt) {
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-int set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
+int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
   int status;
   if (!(*N && *r && *p)) {
     int logN;
@@ -367,7 +367,7 @@ int scrypt_to_string (
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
 {
   int status;
-  status = set_defaults(&salt, &salt_len, &size, &N, &r, &p);
+  status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 #if verbose
   printf("with defaults: salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, size, salt_len);
 #endif

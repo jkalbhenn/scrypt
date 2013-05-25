@@ -1,4 +1,4 @@
 exports {
-  global: scrypt; scrypt_to_string; scrypt_parse_string;
+  global: scrypt; scrypt_to_string; scrypt_parse_string; scrypt_set_defaults;
   local: *;
 };
