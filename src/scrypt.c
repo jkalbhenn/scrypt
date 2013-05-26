@@ -222,9 +222,7 @@ pickparams(size_t maxmem, double maxmemfrac, double maxtime,
     /* Set p = 1 and choose N based on the CPU limit. */
     *p = 1;
     maxN = opslimit / (*r * 4);
-    printf("1 %p %d %d\n", logN, *logN, maxN);
     for (*logN = 1; *logN < 63; *logN += 1) {
-      printf("1 %p %d %d\n", logN, *logN, maxN);
       if (((uint64_t)(1) << *logN) > (maxN / 2))
 	break;
     }
@@ -303,10 +301,10 @@ uint8_t* scrypt_strerror (int number) {
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-int set_default_salt (uint8_t** salt) {
-  *salt = malloc(default_salt_length);
+int set_default_salt (uint8_t** salt, size_t salt_len) {
+  *salt = malloc(salt_len);
   FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
-  size_t len = fread(*salt, default_salt_length, 1, file);
+  size_t len = fread(*salt, salt_len, 1, file);
   if (!len) { return(1); }
   fclose(file); return (0);
 }
@@ -317,16 +315,15 @@ static int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, 
     int logN;
     uint32_t default_r;
     uint32_t default_p;
-    printf("%p\n", &logN);
-    status = pickparams(0, 0.5, 2.0, &logN, &default_r, &default_p); if (status) { return(status); }
+    status = pickparams(0, 0.5, 5.0, &logN, &default_r, &default_p); if (status) { return(status); }
     if (!*N) { *N = (uint64_t)(1) << logN; }
     if (!*r) { *r = default_r; }
     if (!*p) { *p = default_p; }
   }
   if (!*salt) {
-    status = set_default_salt(salt);
+    if (!*salt_len) { *salt_len = default_salt_length; }
+    status = set_default_salt(salt, *salt_len);
     if (status) { return(status); }
-    *salt_len = default_salt_length;
   }
   if (!*size) { *size = default_key_length; }
   return(0);

@@ -29,8 +29,8 @@
 
 void display_help () {
   puts(
-    "scrypt [options ...] password [salt size N r p]\n"
-    "                     base91 [base91 integer integer integer integer]\n"
+    "scrypt [options ...] password [salt size N r p salt-size]\n"
+    "                     base91 [base91 integer integer integer integer integer]\n"
     "\noptions\n"
     //"  -i|--inputfile path  read password in binary from file at path\n"
     //"  -s|--saltfile path  read salt in binary from file at path\n"
@@ -91,7 +91,8 @@ int main (int argc, char **argv) {
     }
     optind += 1;
     if (!check_string && (optind < argc)) {
-      if (ascii_input_flag) {
+      if (*argv[optind] == '-') { salt = 0; salt_len = 0; }
+      else if (ascii_input_flag) {
 	salt = argv[optind];
 	salt_len = strlen(argv[optind]);
       }
@@ -106,7 +107,12 @@ int main (int argc, char **argv) {
 	  N = atol(argv[optind]); optind += 1;
 	  if (optind < argc) {
 	    r = atoi(argv[optind]); optind += 1;
-	    if (optind < argc) { p = atoi(argv[optind]); }
+	    if (optind < argc) {
+	      p = atoi(argv[optind]); optind += 1;
+	      if (!salt && (optind <= argc)) {
+		salt_len = atoi(argv[optind]);
+	      }
+	    }
 	  }
 	}
       }
