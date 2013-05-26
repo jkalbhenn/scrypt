@@ -301,7 +301,7 @@ uint8_t* scrypt_strerror (int number) {
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-int set_default_salt (uint8_t** salt, size_t salt_len) {
+int random_string (uint8_t** salt, size_t salt_len) {
   *salt = malloc(salt_len);
   FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
   size_t len = fread(*salt, salt_len, 1, file);
@@ -309,7 +309,7 @@ int set_default_salt (uint8_t** salt, size_t salt_len) {
   fclose(file); return (0);
 }
 
-static int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
+int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
   int status;
   if (!(*N && *r && *p)) {
     int logN;
@@ -322,7 +322,7 @@ static int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, 
   }
   if (!*salt) {
     if (!*salt_len) { *salt_len = default_salt_length; }
-    status = set_default_salt(salt, *salt_len);
+    status = random_string(salt, *salt_len);
     if (status) { return(status); }
   }
   if (!*size) { *size = default_key_length; }
