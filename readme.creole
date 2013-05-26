@@ -30,7 +30,7 @@ options
   -v|--version  output version information and exit
 }}}
 
-Defaults are used with "-"
+Defaults are used with -
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
