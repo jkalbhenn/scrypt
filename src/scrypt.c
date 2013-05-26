@@ -315,7 +315,7 @@ static int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, 
     int logN;
     uint32_t default_r;
     uint32_t default_p;
-    status = pickparams(0, 0.5, 5.0, &logN, &default_r, &default_p); if (status) { return(status); }
+    status = pickparams(0, 0.5, 3.0, &logN, &default_r, &default_p); if (status) { return(status); }
     if (!*N) { *N = (uint64_t)(1) << logN; }
     if (!*r) { *r = default_r; }
     if (!*p) { *p = default_p; }
