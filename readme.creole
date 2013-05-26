@@ -5,6 +5,8 @@ You may help creating this program by improving portability, commenting or doing
 Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, and the base91 implementation of Joachim Henke.
 
 == Status
+! There's currently an error in calculating the cost-parameter caused by compiler optimisation. I'm looking into it.
+
 Should work on linux, but misses broad user testing.
 
 Possible enhancements
@@ -61,7 +63,7 @@ success
 == Output-format
 * Base91 encoded field values
 * Delimited by -
-* Order: key salt N r p
+* Order: key salt logN r p
 
 == Defaults
 * Salt read from /dev/urandom

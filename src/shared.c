@@ -1,4 +1,4 @@
-#define verbose 0
+#define verbose 1
 #define default_salt_length 16u
 #define default_key_length 32u
 

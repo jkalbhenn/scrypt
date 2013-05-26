@@ -222,8 +222,10 @@ pickparams(size_t maxmem, double maxmemfrac, double maxtime,
     /* Set p = 1 and choose N based on the CPU limit. */
     *p = 1;
     maxN = opslimit / (*r * 4);
+    printf("1 %p %d %d\n", logN, *logN, maxN);
     for (*logN = 1; *logN < 63; *logN += 1) {
-      if ((uint64_t)(1) << *logN > maxN / 2)
+      printf("1 %p %d %d\n", logN, *logN, maxN);
+      if (((uint64_t)(1) << *logN) > (maxN / 2))
 	break;
     }
   } else {
@@ -284,14 +286,6 @@ uint8_t* scrypt_strerror (int number) {
   }
 }
 
-int set_default_salt (uint8_t** salt) {
-  *salt = malloc(default_salt_length);
-  FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
-  size_t len = fread(*salt, default_salt_length, 1, file);
-  if (!len) { return(1); }
-  fclose(file); return (0);
-}
-
 /* scrypt-utility library code.
 
    copyright 2013 Julian Kalbhenn <jkal@posteo.eu>
@@ -309,12 +303,21 @@ int set_default_salt (uint8_t** salt) {
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
+int set_default_salt (uint8_t** salt) {
+  *salt = malloc(default_salt_length);
+  FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
+  size_t len = fread(*salt, default_salt_length, 1, file);
+  if (!len) { return(1); }
+  fclose(file); return (0);
+}
+
+static int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
   int status;
   if (!(*N && *r && *p)) {
     int logN;
     uint32_t default_r;
     uint32_t default_p;
+    printf("%p\n", &logN);
     status = pickparams(0, 0.5, 2.0, &logN, &default_r, &default_p); if (status) { return(status); }
     if (!*N) { *N = (uint64_t)(1) << logN; }
     if (!*r) { *r = default_r; }
@@ -333,6 +336,7 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
   size_t index = 0;
   uint8_t count = 0;
   size_t previous_index = 0;
+  uint32_t logN = 0;
   while (index < arg_len) {
     if (*(arg + index) == '-') {
       count += 1;
@@ -346,8 +350,8 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
 	*salt_len = base91_decode(*salt, arg + previous_index, index - previous_index);
 	previous_index = index;
       case 3:
-	*N = 0;
-	base91_decode((uint8_t*)N, arg + previous_index, index - previous_index);
+	base91_decode((uint8_t*)&logN, arg + previous_index, index - previous_index);
+	*N = (uint64_t)(1) << logN;
 	previous_index = index;
       case 4:
 	*r = 0;
@@ -369,12 +373,13 @@ int scrypt_to_string (
   int status;
   status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 #if verbose
-  printf("with defaults: salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, size, salt_len);
+  printf("with defaults: N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", N, r, p, size, salt_len);
 #endif
   if (status) { return(status); }
   uint8_t* derived_key = malloc(size); if (!derived_key) { return(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
+  uint32_t logN = (uint32_t)log2f(N);
   *res = (uint8_t*)malloc(estimate_encoded_length(size, salt_len, N, r, p));
   if (!*res) { return(1); }
   *res_len = 0;
@@ -382,7 +387,7 @@ int scrypt_to_string (
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, salt, salt_len);
   add_dash(res, res_len);
-  base91_encode_concat(*res, *res_len, &N, number_length_b64(N));
+  base91_encode_concat(*res, *res_len, &logN, number_length_b64(logN));
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, &r, number_length_b32(r));
   add_dash(res, res_len);
