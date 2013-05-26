@@ -30,12 +30,7 @@ options
   -v|--version  output version information and exit
 }}}
 
-Defaults for a parameter are set by using "-" as argument.
-
-Example, using a 64 bit random salt for a 128 bit key:
-{{{
-scrypt testpassword - 128 - - - 64
-}}}
+Defaults are used with "-"
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
@@ -53,6 +48,11 @@ Testing if a hash corresponds to a password
 {{{
 scrypt testpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*ZxwyY`6g5E)&TuAg!$[1NAC-9D_Fb-XLA-IA-QA'
 success
+}}}
+
+Using a 64 bit random salt for a 128 bit key:
+{{{
+scrypt testpassword - 128 - - - 64
 }}}
 
 === Advanced (not implemented)
