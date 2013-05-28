@@ -12,7 +12,7 @@ Possible enhancements
 * Checking arguments for validity
 
 == Installation
-# ./build/make+install.sh target-prefix
+# ./build/make+install.sh [target-prefix]
 
 * Installs a library under {prefix}/usr/lib/libscrypt.so
 * Installs a header file under {prefix}/usr/include/scrypt.h
