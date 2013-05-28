@@ -35,8 +35,8 @@ void display_help () {
     //"  -i|--inputfile path  read password in binary from file at path\n"
     //"  -s|--saltfile path  read salt in binary from file at path\n"
     //"  -o|--outputfile path  write the result string to file at path\n"
-    "  -c|--check hash  tests if hash is derived from a password\n"
-    "  -a|--ascii-input  password and salt arguments are ascii encoded\n"
+    "  -c|--check hash  test if hash is derived from a password\n"
+    "  -a|--ascii-input  password and salt arguments are plain ascii encoded\n"
     "  -h|--help  display this text and exit\n"
     "  -v|--version  output version information and exit\n");
 }

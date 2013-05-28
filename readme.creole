@@ -24,8 +24,8 @@ scrypt-kdf [options ...] password [salt size N r p salt-size]
                      base91 [base91 integer integer integer integer integer]
 
 options
-  -c|--check hash  tests if hash is derived from a password
-  -a|--ascii-input  password and salt arguments are ascii encoded
+  -c|--check hash  test if hash is derived from a password
+  -a|--ascii-input  password and salt arguments are plain ascii encoded
   -h|--help  display this text and exit
   -v|--version  output version information and exit
 }}}
