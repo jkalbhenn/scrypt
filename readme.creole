@@ -1,7 +1,5 @@
 A library and command-line line utility for creating scrypt password key derivations. The programming language used is C.
 
-You may help creating this program by improving portability, commenting or doing other work. Fork, create issues or contact me by email.
-
 Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, and the base91 implementation of Joachim Henke.
 
 == Status

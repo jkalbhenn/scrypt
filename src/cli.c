@@ -119,7 +119,7 @@ int main (int argc, char **argv) {
     }
   }
   else {
-    puts("missing argument \"password\".\n");
+    puts("missing argument \"password\"\n");
     display_help();
     return(1);
   }
