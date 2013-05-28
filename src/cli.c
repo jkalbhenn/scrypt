@@ -25,11 +25,12 @@
 #include "shared.c"
 
 #define version "0.1"
-#define program_name "scrypt"
+#define program_name "scrypt-kdf"
 
 void display_help () {
   puts(
-    "scrypt [options ...] password [salt size N r p salt-size]\n"
+    program_name
+    " [options ...] password [salt size N r p salt-size]\n"
     "                     base91 [base91 integer integer integer integer integer]\n"
     "\noptions\n"
     //"  -i|--inputfile path  read password in binary from file at path\n"
