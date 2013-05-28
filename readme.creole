@@ -167,7 +167,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 * The encoding\decoding algorithm is simple
 
 === Original scrypt utility
-This interface could be combined with the original scrypt file encryption utility either by writing a wrapper or extending the library with file encryption features.
+This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
 
 == External links
 * http://code.google.com/p/scrypt/
