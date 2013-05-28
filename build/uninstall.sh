@@ -1,2 +1,3 @@
 rm /usr/lib/libscrypt.so
 rm /usr/include/scrypt.h
+rm /usr/bin/scrypt-kdf

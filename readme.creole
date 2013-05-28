@@ -12,15 +12,15 @@ Possible enhancements
 * Checking arguments for validity
 
 == Installation
-# ./build/make.sh
-# ./build/install.sh [prefix]
+# ./build/make+install.sh target-prefix
 
 * Installs a library under {prefix}/usr/lib/libscrypt.so
 * Installs a header file under {prefix}/usr/include/scrypt.h
+* Installs a binary under ${prefix}/usr/bin/scrypt-kdf
 
 == Command-line interface
 {{{
-scrypt [options ...] password [salt size N r p salt-size]
+scrypt-kdf [options ...] password [salt size N r p salt-size]
                      base91 [base91 integer integer integer integer integer]
 
 options
@@ -36,23 +36,23 @@ Defaults are used with -
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
 Beware that what looks like plain ascii encoded passwords in the examples is actually interpreted as base91. Use the "--ascii-input" option for actually using plain ascii.
 {{{
-scrypt testpassword
+scrypt-kdf testpassword
 }}}
 
 Custom values for salt and other parameters
 {{{
-scrypt testpassword testsalt 128 1024 8 1
+scrypt-kdf testpassword testsalt 128 1024 8 1
 }}}
 
 Testing if a hash corresponds to a password
 {{{
-scrypt testpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*ZxwyY`6g5E)&TuAg!$[1NAC-9D_Fb-XLA-IA-QA'
+scrypt-kdftestpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*ZxwyY`6g5E)&TuAg!$[1NAC-9D_Fb-XLA-IA-QA'
 success
 }}}
 
 Using a 64 bit random salt for a 128 bit key:
 {{{
-scrypt testpassword - 128 - - - 64
+scrypt-kdftestpassword - 128 - - - 64
 }}}
 
 === Advanced (not implemented)
