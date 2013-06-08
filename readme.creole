@@ -162,7 +162,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 === Base91
 * Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set, "- ' \"
-* The encoding\decoding algorithm is simple
+* The necessary code for encoding\decoding is relatively short
 
 === Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
