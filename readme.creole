@@ -164,10 +164,19 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set - ' \
 * The necessary code for encoding\decoding is relatively short
 
-=== Original scrypt utility
+== Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
 
 == External links
-* http://code.google.com/p/scrypt/
 * http://base91.sourceforge.net/
+* http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt
 * http://www.tarsnap.com/scrypt.html
+* http://code.google.com/p/scrypt/
+
+=== Some interesting scrypt projects
+* http://git.chromium.org/gitweb/?p=chromiumos/third_party/libscrypt.git;a=summary
+* https://github.com/scintill/scrypt
+* https://pypi.python.org/pypi/scrypt/
+* https://github.com/barrysteyn/node-scrypt
+* https://github.com/pbhogan/scrypt
+* https://github.com/viking/scrypty
