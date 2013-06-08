@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <scrypt.h>
+  //the expected default key and salt length is hardcoded here
+#define default_key_len 64u
+#define default_salt_len 16u
 
 void display_byte_array (uint8_t* arr, size_t len) {
   size_t i;
@@ -91,7 +94,7 @@ char test_scrypt_to_string () {
   status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
   if (status) { return(status); }
   scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
-  uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == 32) && (salt_len == 16));
+  uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == default_key_len) && (salt_len == default_salt_len));
   free(str); free(key); free(salt);
   if (!res_1) { printf("failure scrypt_to_string_1"); return (0); }
   //test non-default values
@@ -116,7 +119,7 @@ char test_scrypt_to_string () {
 }
 
 void main () {
-  if (test_scrypt_to_string() && test_1() && test_2()) {
+  if (test_scrypt_to_string() && test_1() && test_2() && test_3() && test_4()) {
     printf("%s\n", "success - all tests passed.");
   }
 }

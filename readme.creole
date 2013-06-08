@@ -4,6 +4,7 @@ Uses code from the "scrypt" file encryption utility written by C. Percival, the 
 
 == Status
 Should work on linux, but misses broad user testing.
+All four reference tests of the scrypt ietf draft passed successfully.
 
 Possible enhancements
 * Portability
