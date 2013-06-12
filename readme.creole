@@ -158,8 +158,8 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 === Field order
 * When creating the string (synthetically), it seems more intuitive to start with the parameters, salt and password, but analytically the reverse seems easier to handle
 * One may think of it like this: you want to create a key derivation, and the first and most prominent thing you get is the key derivation. In that sense it is in order of most significant to least significant (when reading from left to right)
-* A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else so the algorithm would be: take chars until the first dash, got password, take the rest
-* Key and salt have the most predictable length, because of having common power of two lengths and parameters possibly being dynamic based on environment state. all which makes it simpler to extract from the beginning
+* A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else. So the algorithm would be: take chars until the first dash, got password, take the rest
+* Key and salt have the most predictable length, because of having common power of two lengths, and the parameters having dynamic length based on environment state
 
 === Field separator
 * Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefer - over $
