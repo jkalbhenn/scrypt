@@ -137,6 +137,7 @@ int main (int argc, char **argv) {
     size_t key_len;
     if (use_crypt_format) {
       status = scrypt_parse_string_crypt(check_string, strlen(check_string), &key, &salt, &salt_len, &N, &r, &p);
+      printf("%d", status);
       if (status) { return(status); }
       status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, &res, &res_len);
     }
