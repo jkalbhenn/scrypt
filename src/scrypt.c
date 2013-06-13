@@ -442,16 +442,17 @@ int scrypt_to_string_crypt (
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
   uint32_t logN = (uint32_t)log2f(N);
-  size_t encoded_length = estimate_encoded_length_base64(size, salt_len, N, r, p);
+  size_t estimated_len = estimate_encoded_length_base64(size, salt_len, N, r, p);
   uint8_t* res_p;
-  *res = (uint8_t*)malloc(encoded_length);
+  *res = (uint8_t*)malloc(estimated_len);
   if (!*res) { return(1); }
-  *res_len = 0;
-  memcpy(*res, "$7$", 3); encoded_length -= 3;
-  res_p = encode64(*res, encoded_length, derived_key, size);
-  add_dollar(res_p, res_len);
-  res_p = encode64(res_p, encoded_length - (res_p - *res), salt, salt_len);
-  add_dollar(res_p, res_len);
+  memcpy(*res, "$7$", 3);
+  res_p = encode64_uint32(*res + 3, estimated_len - 3, r, 30);
+  res_p = encode64_uint32(res_p, estimated_len - (res_p - *res), p, 30);
+  res_p = encode64(res_p, estimated_len - (res_p - *res), salt, salt_len);
+  *res_p = '$';
+  res_p = encode64(res_p, estimated_len - (res_p - *res), derived_key, size);
   *res_p = 0;
+  *res_len = res_p + 1 - *res;
   return(0);
 }
