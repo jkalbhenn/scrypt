@@ -86,7 +86,7 @@ int main (int argc, char **argv) {
   uint32_t p = 0;
 
   if (optind < argc) {
-    if (use_ascii_input) {
+    if (use_ascii_input || use_crypt_format) {
       password = argv[optind];
       password_len = strlen(argv[optind]);
     }
@@ -97,7 +97,7 @@ int main (int argc, char **argv) {
     optind += 1;
     if (!check_string && (optind < argc)) {
       if (*argv[optind] == '-') { salt = 0; salt_len = 0; }
-      else if (use_ascii_input) {
+      else if (use_ascii_input || use_crypt_format) {
 	salt = argv[optind];
 	salt_len = strlen(argv[optind]);
       }
@@ -136,9 +136,9 @@ int main (int argc, char **argv) {
     uint8_t* key;
     size_t key_len;
     if (use_crypt_format) {
-      status = scrypt_parse_string_crypt(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
+      status = scrypt_parse_string_crypt(check_string, strlen(check_string), &key, &salt, &salt_len, &N, &r, &p);
       if (status) { return(status); }
-      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
+      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, &res, &res_len);
     }
     else {
       status = scrypt_parse_string_base91(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
@@ -153,7 +153,7 @@ int main (int argc, char **argv) {
   }
   else {
     if (use_crypt_format) {
-      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, &res, &res_len);
     } else {
       status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
     }

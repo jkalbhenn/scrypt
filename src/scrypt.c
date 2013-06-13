@@ -430,29 +430,34 @@ int scrypt_parse_string_crypt (uint8_t* arg, size_t arg_len, uint8_t** key, size
 
 int scrypt_to_string_crypt (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
-  uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
+  uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len)
 {
   int status;
-  status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
+  size_t key_len = 32;
+  status = scrypt_set_defaults(&salt, &salt_len, &key_len, &N, &r, &p);
 #if verbose
-  printf("with defaults: N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", N, r, p, size, salt_len);
+  printf("with defaults: N %lu, r %d, p %d, salt_len %lu\n", N, r, p, salt_len);
 #endif
   if (status) { return(status); }
-  uint8_t* derived_key = malloc(size); if (!derived_key) { return(1); }
-  status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
+  uint8_t* derived_key = malloc(key_len); if (!derived_key) { return(1); }
+  status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, key_len);
   if (status) { return(status); }
   uint32_t logN = (uint32_t)log2f(N);
-  size_t estimated_len = estimate_encoded_length_base64(size, salt_len, N, r, p);
+  size_t estimated_len = estimate_encoded_length_base64(key_len, salt_len, N, r, p);
   uint8_t* res_p;
   *res = (uint8_t*)malloc(estimated_len);
   if (!*res) { return(1); }
   memcpy(*res, "$7$", 3);
-  res_p = encode64_uint32(*res + 3, estimated_len - 3, r, 30);
+  res_p = *res + 3;
+  *res_p = itoa64[logN];
+  res_p = encode64_uint32(res_p + 1, estimated_len - (res_p - *res), r, 30);
   res_p = encode64_uint32(res_p, estimated_len - (res_p - *res), p, 30);
-  res_p = encode64(res_p, estimated_len - (res_p - *res), salt, salt_len);
+  memcpy(res_p, salt, salt_len);
+  res_p += salt_len;
   *res_p = '$';
-  res_p = encode64(res_p, estimated_len - (res_p - *res), derived_key, size);
+
+  res_p = encode64(res_p + 1, estimated_len - (res_p - *res), derived_key, key_len);
   *res_p = 0;
-  *res_len = res_p + 1 - *res;
+  *res_len = (res_p + 1) - *res;
   return(0);
 }
