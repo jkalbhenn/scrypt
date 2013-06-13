@@ -38,30 +38,34 @@ void display_help () {
     //"  -o|--outputfile path  write the result string to file at path\n"
     "  -c|--check hash  test if hash is derived from a password\n"
     "  -a|--ascii-input  password and salt arguments are plain ascii encoded\n"
+    "  -p|--crypt  output in unix crypt format\n"
     "  -h|--help  display this text and exit\n"
     "  -v|--version  output version information and exit\n");
 }
 
 int main (int argc, char **argv) {
-  int ascii_input_flag = 0;
+  uint8_t use_ascii_input = 0;
+  uint8_t use_crypt_format = 0;
   uint8_t* check_string = 0;
   int opt;
-  struct option longopts[8] = {
+  struct option longopts[9] = {
     {"inputfile", required_argument, 0, 'i'},
     {"saltfile", required_argument, 0, 's'},
     {"outputfile", required_argument, 0, 'o'},
     {"ascii-input", no_argument, 0, 'a'},
+    {"crypt", no_argument, 0, 'p'},
     {"check", required_argument, 0, 'c'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'v'},
     {0, 0, 0, 0}
   };
-  while ((opt = getopt_long(argc, argv, "c:i:s:o:ahv", longopts, 0)) != -1) {
+  while ((opt = getopt_long(argc, argv, "c:i:s:o:aphv", longopts, 0)) != -1) {
     switch (opt) {
     case 'v':
       printf("%s\n", version);
       return(0);
-    case 'a': ascii_input_flag = 1; break;
+    case 'a': use_ascii_input = 1; break;
+    case 'p': use_crypt_format = 1; break;
     case 'c': check_string = optarg; break;
     case 'i':
     case 's':
@@ -82,7 +86,7 @@ int main (int argc, char **argv) {
   uint32_t p = 0;
 
   if (optind < argc) {
-    if (ascii_input_flag) {
+    if (use_ascii_input) {
       password = argv[optind];
       password_len = strlen(argv[optind]);
     }
@@ -93,7 +97,7 @@ int main (int argc, char **argv) {
     optind += 1;
     if (!check_string && (optind < argc)) {
       if (*argv[optind] == '-') { salt = 0; salt_len = 0; }
-      else if (ascii_input_flag) {
+      else if (use_ascii_input) {
 	salt = argv[optind];
 	salt_len = strlen(argv[optind]);
       }
@@ -131,17 +135,28 @@ int main (int argc, char **argv) {
   if (check_string) {
     uint8_t* key;
     size_t key_len;
-    status = scrypt_parse_string(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
-    if (status) { return(status); }
+    if (use_crypt_format) {
+      status = scrypt_parse_string_crypt(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
+      if (status) { return(status); }
+      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
+    }
+    else {
+      status = scrypt_parse_string_base91(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
 #if verbose
     printf("salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, key_len, salt_len);
 #endif
-    status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
+      if (status) { return(status); }
+      status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
+    }
     if (status) { return(status); }
     puts((memcmp(res, check_string, res_len) == 0) ? "success" : "failure");
   }
   else {
-    status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+    if (use_crypt_format) {
+      status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+    } else {
+      status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+    }
     if (status) { return(status); }
     puts(res);
   }

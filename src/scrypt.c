@@ -36,6 +36,7 @@
 #include "memlimit.c"
 #include "scrypt/scrypt.c"
 #include "base91/base91.c"
+#include "crypt_base64.c"
 
 #ifdef HAVE_CLOCK_GETTIME
 
@@ -329,7 +330,7 @@ int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_
   return(0);
 }
 
-int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
+int scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
   size_t index = 0;
   uint8_t count = 0;
   size_t previous_index = 0;
@@ -363,7 +364,7 @@ int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* ke
   return(0);
 }
 
-int scrypt_to_string (
+int scrypt_to_string_base91 (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
 {
@@ -377,7 +378,7 @@ int scrypt_to_string (
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
   if (status) { return(status); }
   uint32_t logN = (uint32_t)log2f(N);
-  *res = (uint8_t*)malloc(estimate_encoded_length(size, salt_len, N, r, p));
+  *res = (uint8_t*)malloc(estimate_encoded_length_base91(size, salt_len, N, r, p));
   if (!*res) { return(1); }
   *res_len = 0;
   base91_encode_concat(*res, *res_len, derived_key, size);
@@ -390,5 +391,67 @@ int scrypt_to_string (
   add_dash(res, res_len);
   base91_encode_concat(*res, *res_len, &p, number_length_b32(p));
   *(*res + *res_len) = 0;
+  return(0);
+}
+
+int scrypt_parse_string_crypt (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
+  size_t index = 0;
+  uint8_t count = 0;
+  size_t previous_index = 0;
+  uint32_t logN = 0;
+  while (index < arg_len) {
+    if (*(arg + index) == '-') {
+      count += 1;
+      switch (count) {
+      case 1:
+	previous_index = index;
+	*key = malloc(index); if (!*key) { return(1); }
+	*key_len = base91_decode(*key, arg, index);
+      case 2:
+	*salt = malloc(index - previous_index); if (!*salt) { return(1); }
+	*salt_len = base91_decode(*salt, arg + previous_index, index - previous_index);
+	previous_index = index;
+      case 3:
+	base91_decode((uint8_t*)&logN, arg + previous_index, index - previous_index);
+	*N = (uint64_t)(1) << logN;
+	previous_index = index;
+      case 4:
+	*r = 0;
+	base91_decode((uint8_t*)r, arg + previous_index, index - previous_index);
+	previous_index = index;
+      }
+    }
+    index += 1;
+  }
+  *p = 0;
+  base91_decode((uint8_t*)p, arg + previous_index, index - previous_index);
+  return(0);
+}
+
+int scrypt_to_string_crypt (
+  uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
+{
+  int status;
+  status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
+#if verbose
+  printf("with defaults: N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", N, r, p, size, salt_len);
+#endif
+  if (status) { return(status); }
+  uint8_t* derived_key = malloc(size); if (!derived_key) { return(1); }
+  status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, size);
+  if (status) { return(status); }
+  uint32_t logN = (uint32_t)log2f(N);
+  size_t encoded_length = estimate_encoded_length_base64(size, salt_len, N, r, p);
+  uint8_t* res_p;
+  *res = (uint8_t*)malloc(encoded_length);
+  if (!*res) { return(1); }
+  *res_len = 0;
+  memcpy(*res, "$7$", 3); encoded_length -= 3;
+  res_p = encode64(*res, encoded_length, derived_key, size);
+  add_dollar(res_p, res_len);
+  res_p = encode64(res_p, encoded_length - (res_p - *res), salt, salt_len);
+  add_dollar(res_p, res_len);
+  *res_p = 0;
   return(0);
 }

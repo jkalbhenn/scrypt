@@ -152,7 +152,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 == License
 * Base91 implementation - bsd 3-clause
 * Scrypt implementation and utility code - bsd 2-clause
-* Rest - gpl3
+* Rest - lgpl3
 
 == Rationale
 === Field order

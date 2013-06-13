@@ -4,8 +4,10 @@
 
 static __thread struct basE91 b91;
 #define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
-#define estimate_encoded_length(size, salt_len, N, r, p) (size_t)ceil(2.3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))
+#define estimate_encoded_length_base91(size, salt_len, N, r, p) (size_t)ceil(2.3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))
+#define estimate_encoded_length_base64(size, salt_len, N, r, p) (size_t)ceil(3 * (double)(size + salt_len + number_length_b64(N) + number_length_b32(r) + number_length_b32(p)))
 #define add_dash(buf, len) *(*buf + *len) = '-'; *len += 1;
+#define add_dollar(buf, len) *buf = '$'; *len += 1;
 
 #define number_length_b64(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : arg <= 0xffffffff ? 4u : \
     arg <= 0xffffffffff ? 5u : arg <= 0xffffffffffff ? 6u : arg <= 0xffffffffffffff ? 7u : 8u)

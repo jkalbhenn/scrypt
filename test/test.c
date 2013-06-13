@@ -79,7 +79,7 @@ char test_4 () {
     exp, sizeof(exp), res, sizeof(res));
 }
 
-char test_scrypt_to_string () {
+char test_scrypt_to_string_base91 () {
   uint8_t* str;
   size_t str_len;
   int status;
@@ -91,16 +91,16 @@ char test_scrypt_to_string () {
   uint32_t r;
   uint32_t p;
   //test setting of default values
-  status = scrypt_to_string("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
+  status = scrypt_to_string_base91("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
   if (status) { return(status); }
-  scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
+  scrypt_parse_string_base91(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
   uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == default_key_len) && (salt_len == default_salt_len));
   free(str); free(key); free(salt);
-  if (!res_1) { printf("failure scrypt_to_string_1"); return (0); }
+  if (!res_1) { printf("failure scrypt_to_string_base91_1"); return (0); }
   //test non-default values
-  status = scrypt_to_string("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
+  status = scrypt_to_string_base91("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
   if (status) { return(status); }
-  scrypt_parse_string(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
+  scrypt_parse_string_base91(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
   uint8_t exp[] = {
     0x70, 0x23, 0xbd, 0xcb, 0x3a, 0xfd, 0x73, 0x48, 0x46, 0x1c, 0x06, 0xcd, 0x81, 0xfd, 0x38, 0xeb,
     0xfd, 0xa8, 0xfb, 0xba, 0x90, 0x4f, 0x8e, 0x3e, 0xa9, 0xb5, 0x43, 0xf6, 0x54, 0x5d, 0xa1, 0xf2,
@@ -113,13 +113,13 @@ char test_scrypt_to_string () {
     && (N == 16384) && (r == 8) && (p == 1);
   free(str); free(key); free(salt);
   if (!res_2) {
-    printf("failure scrypt_to_string_2 N %lu, r %x, p %x, salt-len %d, key-len %d\n", N, r, p, salt_len, key_len);
+    printf("failure scrypt_to_string_base91_2 N %lu, r %x, p %x, salt-len %d, key-len %d\n", N, r, p, salt_len, key_len);
   }
   return(res_2);
 }
 
 void main () {
-  if (test_scrypt_to_string() && test_1() && test_2() && test_3() && test_4()) {
+  if (test_scrypt_to_string_base91() && test_1() && test_2() && test_3() && test_4()) {
     printf("%s\n", "success - all tests passed.");
   }
 }
