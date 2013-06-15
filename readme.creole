@@ -174,7 +174,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
 
 == Sources
-Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, a base64 implementation of Alexander Peslyak, and the base91 implementation of Joachim Henke.
+Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, a base64 implementation by Alexander Peslyak, and the base91 implementation by Joachim Henke.
 
 == License
 * Base91 implementation - bsd 3-clause
