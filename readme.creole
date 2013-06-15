@@ -1,7 +1,5 @@
 A library and command-line line utility for creating scrypt password key derivations. The programming language used is C.
 
-Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, and the base91 implementation of Joachim Henke.
-
 I'm open for contributions.
 
 == Status
@@ -11,7 +9,6 @@ All four reference tests of the scrypt ietf draft passed successfully.
 Possible enhancements
 * Portability
 * Checking arguments for validity
-* Using base64 for improved compatibility
 
 == Installation
 # ./build/make+install.sh [target-prefix]
@@ -22,13 +19,13 @@ Possible enhancements
 
 == Command-line interface
 {{{
-scrypt-kdf [options ...] password [salt size N r p salt-size]
-                     base91 [base91 integer integer integer integer integer]
-
+scrypt-kdf [options ...] password [salt N r p size salt-size]
+                         string string integer integer integer integer integer]
 options
+  -b|--base91-input  password and salt arguments are base91 encoded
   -c|--check hash  test if hash is derived from a password
-  -a|--ascii-input  password and salt arguments are plain ascii encoded
   -h|--help  display this text and exit
+  -p|--crypt  use unix crypt format
   -v|--version  output version information and exit
 }}}
 
@@ -36,25 +33,24 @@ Defaults are used with -
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
-Beware that what looks like plain ascii encoded passwords in the examples is actually interpreted as base91. Use the "--ascii-input" option for actually using plain ascii.
 {{{
 scrypt-kdf testpassword
 }}}
 
 Custom values for salt and other parameters
 {{{
-scrypt-kdf testpassword testsalt 128 1024 8 1
+scrypt-kdf testpassword testsalt 16384 8 1 64
 }}}
 
 Testing if a hash corresponds to a password
 {{{
-scrypt-kdf testpassword -c '_;*QrUlMHA:8%3cv95T4olchP`s_ooiU@xH]bRqokP&!ZM!c>&>V&NW*ZxwyY`6g5E)&TuAg!$[1NAC-9D_Fb-XLA-IA-QA'
+scrypt-kdf testpassword -c 'qgr]R7~eLs(?Q2$T"*)P%xYbqQq(!PDT@hL|;L8w&`24HePU2DAR_S8mCpE/w`sIa4S[+|}`LJ~`I<V-fPNKS[7*qU-OA-IA-BA'
 success
 }}}
 
-Using a 64 bit random salt for a 128 bit key:
+Using a 128 bit key with a 64 bit random salt and defaults for other parameters.
 {{{
-scrypt-kdf testpassword - 128 - - - 64
+scrypt-kdf testpassword - - - - - 128 64
 }}}
 
 === Advanced (not implemented)
@@ -83,6 +79,7 @@ libscrypt
   scrypt_parse_string
   scrypt_set_defaults
   scrypt_to_string
+  scrypt_strerror
 scrypt
 }}}
 
@@ -102,12 +99,18 @@ Implementation of the fundamental scrypt key derivation function.
 
 === scrypt_to_string
 {{{
-int scrypt_to_string (
+uint32_t scrypt_to_string_base91 (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len);
 }}}
 
 Creates a hash string like the command-line utility.
+
+{{{
+uint32_t scrypt_to_string_crypt (
+  uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len);
+}}}
 
 ==== Example call
 {{{
@@ -128,7 +131,10 @@ status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, size,
 
 === scrypt_parse_string
 {{{
-int scrypt_parse_string (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
+int scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
+}}}
+{{{
+int scrypt_parse_string_crypt (uint8_t* arg, size_t arg_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
 }}}
 
 ==== Example call
@@ -149,28 +155,31 @@ Variables are updated with defaults if set to 0.
 status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 }}}
 
+== Sources
+Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, a base64 implementation of Alexander Peslyak, and the base91 implementation of Joachim Henke.
+
 == License
 * Base91 implementation - bsd 3-clause
 * Scrypt implementation and utility code - bsd 2-clause
+* Base64 implementation - see source file "crypt_base64.c"
 * Rest - lgpl3
 
 == Rationale
 === Field order
-* When creating the string (synthetically), it seems more intuitive to start with the parameters, salt and password, but analytically the reverse seems easier to handle
+* When creating the string (synthetically), it seems more intuitive to start with the parameters, salt and password, but when reading the reverse seems easier
 * One may think of it like this: you want to create a key derivation, and the first and most prominent thing you get is the key derivation. In that sense it is in order of most significant to least significant (when reading from left to right)
 * A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else. So the algorithm would be: take chars until the first dash, got password, take the rest
-* Key and salt have the most predictable length, because of having common power of two lengths, and the parameters having dynamic length based on environment state
+* Key and salt have the most predictable length, because of having common power of two lengths, and the parameters may have a length based on environment state
 
 === Field separator
-* Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefer - over $
+* Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefering - over $
 * Base91 leaves "-" for use
 
 === Base91
 * Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set - ' \
-* The necessary code for encoding\decoding is relatively short
 * - Incompatible with the /etc/passwd format because of using :
-* - Input in base91 requires previous base91 encoding, a not yet very common format
+* - Encoded input may require a separate previous encoding step for use on the command-line
 
 == Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
@@ -180,6 +189,7 @@ This interface could be combined with the original scrypt file encryption utilit
 * http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt
 * http://www.tarsnap.com/scrypt.html
 * http://code.google.com/p/scrypt/
+* https://www.gitorious.org/scrypt/scrypt-unix-crypt/blobs/raw/master/unix-scrypt.txt
 
 === Some interesting scrypt projects
 * http://git.chromium.org/gitweb/?p=chromiumos/third_party/libscrypt.git;a=summary

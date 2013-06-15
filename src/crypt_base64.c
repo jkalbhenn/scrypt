@@ -71,8 +71,7 @@ static int decode64_one(uint32_t * dst, uint8_t src)
   return -1;
 }
 
-static const uint8_t * decode64_uint32(uint32_t * dst, uint32_t dstbits,
-  const uint8_t * src)
+static const uint8_t * decode64_uint32(uint32_t * dst, uint32_t dstbits, const uint8_t * src)
 {
   uint32_t bit;
   uint32_t value;

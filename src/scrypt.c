@@ -37,6 +37,7 @@
 #include "scrypt/scrypt.c"
 #include "base91/base91.c"
 #include "crypt_base64.c"
+#include "error.c"
 
 #ifdef HAVE_CLOCK_GETTIME
 
@@ -254,43 +255,12 @@ pickparams(size_t maxmem, double maxmemfrac, double maxtime,
 #include <math.h>
 #include "shared.c"
 
-uint8_t* scrypt_strerror (int number) {
-  switch (number) {
-  case 1:
-    return("Error determining amount of available memory");
-  case 2:
-    return("Error reading clocks");
-  case 3:
-    return("Error computing derived key");
-  case 4:
-    return("Error reading salt");
-  case 5:
-    return("OpenSSL error");
-  case 6:
-    return("Error allocating memory");
-  case 7:
-    return("Input is not valid scrypt-encrypted block");
-  case 8:
-    return("Unrecognized scrypt format version");
-  case 9:
-    return("Decrypting file would require too much memory");
-  case 10:
-    return("Decrypting file would take too much CPU time");
-  case 11:
-    return("Passphrase is incorrect");
-  case 12:
-    return("Error writing file");
-  case 13:
-    return("Error reading file");
-  }
-}
-
 /* scrypt-utility library code.
 
    copyright 2013 Julian Kalbhenn <jkal@posteo.eu>
 
    This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
+   it under the terms of the GNU Lesser General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
@@ -299,10 +269,10 @@ uint8_t* scrypt_strerror (int number) {
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-int random_string (uint8_t** salt, size_t salt_len) {
+uint32_t random_string (uint8_t** salt, size_t salt_len) {
   *salt = malloc(salt_len);
   FILE* file = fopen("/dev/urandom", "r"); if (!file) { return(1); }
   size_t len = fread(*salt, salt_len, 1, file);
@@ -310,8 +280,8 @@ int random_string (uint8_t** salt, size_t salt_len) {
   fclose(file); return (0);
 }
 
-int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
-  int status;
+uint32_t scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p) {
+  uint32_t status;
   if (!(*N && *r && *p)) {
     int logN;
     uint32_t default_r;
@@ -330,7 +300,7 @@ int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_
   return(0);
 }
 
-int scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
+uint32_t scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
   size_t index = 0;
   uint8_t count = 0;
   size_t previous_index = 0;
@@ -364,11 +334,11 @@ int scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, siz
   return(0);
 }
 
-int scrypt_to_string_base91 (
+uint32_t scrypt_to_string_base91 (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len)
 {
-  int status;
+  uint32_t status;
   status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 #if verbose
   printf("with defaults: N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", N, r, p, size, salt_len);
@@ -394,33 +364,33 @@ int scrypt_to_string_base91 (
   return(0);
 }
 
-int scrypt_parse_string_crypt (const uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
-  uint8_t count = 0;
+uint32_t scrypt_parse_string_crypt (const uint8_t* arg, size_t arg_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p) {
+  if (!((arg[0] == '$') && (arg[1] == '7') && (arg[2] == '$'))) {
+    return(error_invalid_hash_format);
+  }
   uint32_t logN = 0;
-  uint8_t* arg_p = arg + 3; //$7$
-  if (!((arg[0] == '$') && (arg[1] == '7') && (arg[2] == '$'))) { return(1); }
-  while ((arg_p - arg) < arg_len) {
-    if (*arg == '$') {
-      arg_p += 1;
-      if (decode64_one(&logN, *arg_p)) { return(1); }
-      arg_p += index;
-      arg_p = decode64_uint32(r, 30, arg_p);
-      arg_p = decode64_uint32(p, 30, arg_p);
-/*
-      *salt = malloc(index - previous_index); if (!*salt) { return(1); }
-      *salt_len = base91_decode(*salt, arg + previous_index, index - previous_index);
-      */
+  size_t index = arg_len;
+  //crypt format-identifier (3 chars) + parameters (11 chars) + salt (non-limited size) + password (43 chars)
+  while (index >= 14) {
+    if (*(arg + index) == '$') {
+      *salt_len = index - 14;
+      *salt = malloc(*salt_len); if (!*salt) { return(1); }
+      memcpy(*salt, arg + 14, *salt_len);
+      if (decode64_one(&logN, *(arg + 3))) { return(1); }
+      *N = (uint64_t)(1) << logN;
+      decode64_uint32(r, 30, arg + 4);
+      decode64_uint32(p, 30, arg + 9);
     }
-    arg += 1;
+    index -= 1;
   }
   return(0);
 }
 
-int scrypt_to_string_crypt (
+uint32_t scrypt_to_string_crypt (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len)
 {
-  int status;
+  uint32_t status;
   size_t key_len = 32;
   status = scrypt_set_defaults(&salt, &salt_len, &key_len, &N, &r, &p);
   if (status) { return(status); }

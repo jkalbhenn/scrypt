@@ -2,7 +2,7 @@
 
 prefix=$1
 mkdir -p temp
-o=0
+o=3
 
 #compile libscrypt
 n=libscrypt

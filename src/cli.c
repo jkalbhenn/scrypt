@@ -23,49 +23,50 @@
 #include "scrypt.h"
 #include "base91/base91.c"
 #include "shared.c"
+#include "error.h"
 
-#define version "0.1"
-#define program_name "scrypt-kdf"
+#define version "0.2"
 
 void display_help () {
   puts(
-    program_name
-    " [options ...] password [salt size N r p salt-size]\n"
-    "                     base91 [base91 integer integer integer integer integer]\n"
-    "\noptions\n"
+    "scrypt-kdf [options ...] password [salt N r p size salt-size]\n"
+    "                         string [string integer integer integer integer integer]\n"
+    "options\n"
     //"  -i|--inputfile path  read password in binary from file at path\n"
     //"  -s|--saltfile path  read salt in binary from file at path\n"
     //"  -o|--outputfile path  write the result string to file at path\n"
+    "  -b|--base91-input  password and salt arguments are base91 encoded\n"
     "  -c|--check hash  test if hash is derived from a password\n"
-    "  -a|--ascii-input  password and salt arguments are plain ascii encoded\n"
-    "  -p|--crypt  output in unix crypt format\n"
     "  -h|--help  display this text and exit\n"
-    "  -v|--version  output version information and exit\n");
+    "  -p|--crypt  use unix crypt format\n"
+    "  -v|--version  output version information and exit");
 }
 
 int main (int argc, char **argv) {
-  uint8_t use_ascii_input = 0;
-  uint8_t use_crypt_format = 0;
+  uint8_t use_ascii_input = 1;
+  uint8_t use_base91_input = 0;
+  uint8_t use_crypt_output = 0;
+  uint8_t use_base91_output = 1;
   uint8_t* check_string = 0;
   int opt;
   struct option longopts[9] = {
     {"inputfile", required_argument, 0, 'i'},
     {"saltfile", required_argument, 0, 's'},
     {"outputfile", required_argument, 0, 'o'},
-    {"ascii-input", no_argument, 0, 'a'},
+    {"base91-input", no_argument, 0, 'b'},
     {"crypt", no_argument, 0, 'p'},
     {"check", required_argument, 0, 'c'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'v'},
     {0, 0, 0, 0}
   };
-  while ((opt = getopt_long(argc, argv, "c:i:s:o:aphv", longopts, 0)) != -1) {
+  while ((opt = getopt_long(argc, argv, "c:i:s:o:bphv", longopts, 0)) != -1) {
     switch (opt) {
     case 'v':
       printf("%s\n", version);
       return(0);
-    case 'a': use_ascii_input = 1; break;
-    case 'p': use_crypt_format = 1; break;
+    case 'b': use_base91_input = 1; break;
+    case 'p': use_crypt_output = 1; break;
     case 'c': check_string = optarg; break;
     case 'i':
     case 's':
@@ -85,35 +86,43 @@ int main (int argc, char **argv) {
   uint32_t r = 0;
   uint32_t p = 0;
 
+  //-- input --//
+  //argument 1
   if (optind < argc) {
-    if (use_ascii_input || use_crypt_format) {
-      password = argv[optind];
-      password_len = strlen(argv[optind]);
-    }
-    else {
+    if (use_base91_input) {
       password = malloc(strlen(argv[optind]));
       password_len = base91_decode(password, argv[optind], strlen(argv[optind]));
     }
+    else {
+      password = argv[optind];
+      password_len = strlen(argv[optind]);
+    }
     optind += 1;
+    //argument 2
     if (!check_string && (optind < argc)) {
       if (*argv[optind] == '-') { salt = 0; salt_len = 0; }
-      else if (use_ascii_input || use_crypt_format) {
-	salt = argv[optind];
-	salt_len = strlen(argv[optind]);
-      }
-      else {
+      else if (use_base91_input) {
 	salt = malloc(strlen(argv[optind]));
 	salt_len = base91_decode(salt, argv[optind], strlen(argv[optind]));
       }
+      else {
+	salt = argv[optind];
+	salt_len = strlen(argv[optind]);
+      }
       optind += 1;
+      //argument 3
       if (optind < argc) {
-	size = atol(argv[optind]); optind += 1;
+	N = atol(argv[optind]); optind += 1;
+	//argument 4
 	if (optind < argc) {
-	  N = atol(argv[optind]); optind += 1;
+	  r = atoi(argv[optind]); optind += 1;
+	  //argument 5
 	  if (optind < argc) {
-	    r = atoi(argv[optind]); optind += 1;
+	    p = atoi(argv[optind]); optind += 1;
+	    //argument 6
 	    if (optind < argc) {
-	      p = atoi(argv[optind]); optind += 1;
+	      size = atol(argv[optind]); optind += 1;
+	      //argument 7
 	      if (!salt && (optind <= argc)) {
 		salt_len = atoi(argv[optind]);
 	      }
@@ -129,16 +138,21 @@ int main (int argc, char **argv) {
     return(1);
   }
 
+#define require_success(status) if (status) { puts(scrypt_strerror(status)); return(status); }
+
+  //-- output --//
   uint8_t* res;
   size_t res_len;
-  int status;
+  uint32_t status;
   if (check_string) {
     uint8_t* key;
     size_t key_len;
-    if (use_crypt_format) {
-      status = scrypt_parse_string_crypt(check_string, strlen(check_string), &key, &salt, &salt_len, &N, &r, &p);
-      printf("%d", status);
-      if (status) { return(status); }
+    if (use_crypt_output) {
+      status = scrypt_parse_string_crypt(check_string, strlen(check_string), &salt, &salt_len, &N, &r, &p);
+#if verbose
+      printf("salt %s, N %lu, r %d, p %d, salt_len %lu\n", salt, N, r, p, salt_len);
+#endif
+      require_success(status);
       status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, &res, &res_len);
     }
     else {
@@ -146,19 +160,19 @@ int main (int argc, char **argv) {
 #if verbose
     printf("salt %s, N %lu, r %d, p %d, key_len %lu, salt_len %lu\n", salt, N, r, p, key_len, salt_len);
 #endif
-      if (status) { return(status); }
+      require_success(status);
       status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, key_len, &res, &res_len);
     }
-    if (status) { return(status); }
+    require_success(status);
     puts((memcmp(res, check_string, res_len) == 0) ? "success" : "failure");
   }
   else {
-    if (use_crypt_format) {
+    if (use_crypt_output) {
       status = scrypt_to_string_crypt(password, password_len, salt, salt_len, N, r, p, &res, &res_len);
     } else {
       status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
     }
-    if (status) { return(status); }
+    require_success(status);
     puts(res);
   }
 }
