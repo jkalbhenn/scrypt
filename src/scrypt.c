@@ -392,8 +392,16 @@ uint32_t scrypt_to_string_crypt (
 {
   uint32_t status;
   size_t key_len = 32;
+  uint8_t use_default_salt = salt == 0;
   status = scrypt_set_defaults(&salt, &salt_len, &key_len, &N, &r, &p);
   if (status) { return(status); }
+  if (use_default_salt) {
+    //base64-encode the random bytes generated for the salt
+    uint8_t* salt_base64 = malloc(salt_len); if (!salt_base64) { return(1); }
+    encode64(salt_base64, salt_len, salt, salt_len);
+    free(salt);
+    salt = salt_base64;
+  }
   uint8_t* derived_key = malloc(key_len); if (!derived_key) { return(1); }
   status = scrypt(password, password_len, salt, salt_len, N, r, p, derived_key, key_len);
   if (status) { return(status); }
@@ -407,7 +415,9 @@ uint32_t scrypt_to_string_crypt (
   *res_p = itoa64[logN];
   res_p = encode64_uint32(res_p + 1, estimated_len - (res_p - *res), r, 30);
   res_p = encode64_uint32(res_p, estimated_len - (res_p - *res), p, 30);
+
   memcpy(res_p, salt, salt_len);
+
   res_p += salt_len;
   *res_p = '$';
   res_p = encode64(res_p + 1, estimated_len - (res_p - *res), derived_key, key_len);

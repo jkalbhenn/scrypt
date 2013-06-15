@@ -29,7 +29,8 @@ options
   -v|--version  output version information and exit
 }}}
 
-Defaults are used with -
+* Defaults are used with -
+* "size" and "salt-size" define a number of bits and must be divisible by 8
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
@@ -39,12 +40,12 @@ scrypt-kdf testpassword
 
 Custom values for salt and other parameters
 {{{
-scrypt-kdf testpassword testsalt 16384 8 1 64
+scrypt-kdf testpassword testsalt 16384 8 1 256
 }}}
 
 Testing if a hash corresponds to a password
 {{{
-scrypt-kdf testpassword -c 'qgr]R7~eLs(?Q2$T"*)P%xYbqQq(!PDT@hL|;L8w&`24HePU2DAR_S8mCpE/w`sIa4S[+|}`LJ~`I<V-fPNKS[7*qU-OA-IA-BA'
+scrypt-kdf testpassword -c 'qgr]R7~eLs(?Q2$T"*)P%xYbqQq(!PDT@hL|;L7D-fPNKS[7*qU-OA-IA-BA'
 success
 }}}
 
@@ -63,12 +64,29 @@ scrypt-kdf testpassword - - - - - 128 64
   -o|outfile
 }}}
 
-== Output-format
+== Output format
+=== Current default
 * Base91 encoded field values
 * Delimited by -
 * Order: key salt logN r p
 
+Example
+{{{
+qgr]R7~eLs(?Q2$T"*)P%xYbqQq(!PDT@hL|;L7D-fPNKS[7*qU-OA-IA-BA
+}}}
+=== Unix crypt
+* Crypt-base64 encoded key
+* Delimited by $
+* Order: format-id logN r p salt key
+
+Example
+{{{
+$7$C6..../....testsalt$8iWefERUpfDgs0B1s2CCn0flMHOLqzCNVMn0AwxoEM8
+}}}
+
 == Defaults
+* Key length 256
+* Salt length 128
 * Salt read from /dev/urandom
 * (N r p) parameters estimated by testing cpuspeed and free memory
 

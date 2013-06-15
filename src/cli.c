@@ -121,10 +121,10 @@ int main (int argc, char **argv) {
 	    p = atoi(argv[optind]); optind += 1;
 	    //argument 6
 	    if (optind < argc) {
-	      size = atol(argv[optind]); optind += 1;
+	      size = atol(argv[optind]) / 8; optind += 1;
 	      //argument 7
 	      if (!salt && (optind <= argc)) {
-		salt_len = atoi(argv[optind]);
+		salt_len = atoi(argv[optind]) / 8;
 	      }
 	    }
 	  }

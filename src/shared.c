@@ -1,6 +1,6 @@
 #define verbose 0
 #define default_salt_length 16u
-#define default_key_length 64u
+#define default_key_length 32u
 
 static __thread struct basE91 b91;
 #define number_length_b32(arg) (arg <= 0xff ? 1u : arg <= 0xffff ? 2u : arg <= 0xffffff ? 3u : 4u)
