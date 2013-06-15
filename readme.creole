@@ -122,13 +122,13 @@ uint32_t scrypt_to_string_base91 (
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len);
 }}}
 
-Creates a hash string like the command-line utility.
-
 {{{
 uint32_t scrypt_to_string_crypt (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len);
 }}}
+
+Creates a hash string like the command-line utility.
 
 ==== Example call
 {{{
@@ -144,7 +144,7 @@ uint64_t N = 0;
 uint32_t r = 0;
 uint32_t p = 0;
 
-status = scrypt_to_string(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
+status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p, size, &res, &res_len);
 }}}
 
 === scrypt_parse_string
@@ -158,7 +158,7 @@ int scrypt_parse_string_crypt (uint8_t* arg, size_t arg_len, uint8_t** salt, siz
 ==== Example call
 Variable initialisations implied, see above.
 {{{
-status = scrypt_parse_string(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
+status = scrypt_parse_string_base91(check_string, strlen(check_string), &key, &key_len, &salt, &salt_len, &N, &r, &p);
 }}}
 
 === scrypt_set_defaults
