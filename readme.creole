@@ -180,7 +180,7 @@ Uses code from the "scrypt" file encryption utility written by C. Percival, the 
 * Base91 implementation - bsd 3-clause
 * Scrypt implementation and utility code - bsd 2-clause
 * Base64 implementation - see source file "crypt_base64.c"
-* Rest - lgpl3
+* Rest - lgpl3+
 
 == Rationale
 === Field order
