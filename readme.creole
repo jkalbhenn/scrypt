@@ -30,7 +30,7 @@ options
 }}}
 
 * Defaults are used with -
-* "size" and "salt-size" define a number of bits and must be divisible by 8
+* "size" and "salt-size" define the number of bits and must be divisible by 8
 
 === Examples
 Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
