@@ -1,6 +1,6 @@
 A library and command-line line utility for creating scrypt password key derivations. The programming language used is C.
 
-I'm open for contributions.
+I'm open to contributions.
 
 == Status
 Should work on linux, but misses broad user testing.
