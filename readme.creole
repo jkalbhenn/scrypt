@@ -1,12 +1,12 @@
-A library and command-line line utility for creating scrypt password key derivations. The programming language used is C.
+A library and command-line utility for creating scrypt password key derivations. The programming language used is C.
 
-I'm open to contributions.
+Open to contributions.
 
 == Status
-Should work on linux, but misses broad user testing.
-All four reference tests of the scrypt ietf draft passed successfully.
+Should work on linux and all four reference tests of the scrypt ietf draft pass successfully.
 
 Possible enhancements
+* Testing
 * Portability
 * Checking arguments for validity
 
@@ -15,7 +15,7 @@ Possible enhancements
 
 * Installs a library under {prefix}/usr/lib/libscrypt.so
 * Installs a header file under {prefix}/usr/include/scrypt.h
-* Installs a binary under ${prefix}/usr/bin/scrypt-kdf
+* Installs a binary under {prefix}/usr/bin/scrypt-kdf
 
 == Command-line interface
 {{{
@@ -29,7 +29,7 @@ options
   -v|--version  output version information and exit
 }}}
 
-* Defaults are used with -
+* Defaults for a parameter are used with the minus character -
 * "size" and "salt-size" define the number of bits and must be divisible by 8
 
 === Examples
@@ -166,7 +166,7 @@ status = scrypt_parse_string_base91(check_string, strlen(check_string), &key, &k
 int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p);
 }}}
 
-Variables are updated with defaults if set to 0.
+Variables with the value of zero are updated with defaults.
 
 ==== Example call
 {{{
@@ -184,20 +184,20 @@ Uses code from the "scrypt" file encryption utility written by C. Percival, the 
 
 == Rationale
 === Field order
-* When creating the string (synthetically), it seems more intuitive to start with the parameters, salt and password, but when reading the reverse seems easier
-* One may think of it like this: you want to create a key derivation, and the first and most prominent thing you get is the key derivation. In that sense it is in order of most significant to least significant (when reading from left to right)
-* A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else. So the algorithm would be: take chars until the first dash, got password, take the rest
+* When creating the string, it seems more intuitive to start with the parameters, salt and password, but when reading the reverse order seems better.
+  One may think of it like this: you want to create a key derivation, and the first and most prominent thing you get is the actual key derivation. In that sense it is in order of most significant to least significant (when reading from left to right)
+* A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else. So the algorithm would be: take chars until the first dash, got password, take the rest; without fixed length fields.
 * Key and salt have the most predictable length, because of having common power of two lengths, and the parameters may have a length based on environment state
 
 === Field separator
-* Don't use a cryptic symbol if a less cryptic symbol does the job, for example prefering - over $
+* Don't use a cryptic symbol if a less cryptic and more common symbol does the job, for example prefering - over $
 * Base91 leaves "-" for use
 
 === Base91
 * Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set - ' \
-* - Incompatible with the /etc/passwd format because of using :
-* - Encoded input may require a separate previous encoding step for use on the command-line
+* It is incompatible with the /etc/passwd format because it uses :
+* It may require extra previous encoding of input
 
 == Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
@@ -209,7 +209,7 @@ This interface could be combined with the original scrypt file encryption utilit
 * http://code.google.com/p/scrypt/
 * https://www.gitorious.org/scrypt/scrypt-unix-crypt/blobs/raw/master/unix-scrypt.txt
 
-=== Some interesting scrypt projects
+=== A few interesting scrypt projects
 * http://git.chromium.org/gitweb/?p=chromiumos/third_party/libscrypt.git;a=summary
 * https://github.com/scintill/scrypt
 * https://pypi.python.org/pypi/scrypt/
