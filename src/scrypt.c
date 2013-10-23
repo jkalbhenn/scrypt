@@ -1,5 +1,5 @@
 /*-
- * This file contains code under the following license terms (up to line 300):
+ * This file contains code under the following license terms (up to line ~258):
  *
  * Copyright 2009 Colin Percival
  * All rights reserved.
