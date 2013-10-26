@@ -1,7 +1,8 @@
-#scrypt depends on an installed libscrypt
+#the binary scrypt-kdf depends on libscrypt, so libscrypt is build and installed first, then scrypt-kdf
 
 prefix=$1
 mkdir -p temp
+#compiler optisation
 o=3
 
 #compile libscrypt
