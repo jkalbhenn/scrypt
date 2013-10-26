@@ -197,7 +197,6 @@ Uses code from the "scrypt" file encryption utility written by C. Percival, the 
 * Enables the use of the full binary range for password and salt on the command-line
 * Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set - ' \
 * It is incompatible with the /etc/passwd format because it uses :
-* It may require extra previous encoding of input
 
 == Original scrypt utility
 This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
