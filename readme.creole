@@ -113,7 +113,11 @@ int scrypt (
   uint64_t N, uint32_t r, uint32_t p, uint8_t * res, size_t res_len);
 }}}
 
-Implementation of the fundamental scrypt key derivation function.
+The fundamental scrypt key derivation function.
+
+* N must be a power of 2
+* r * p < 2^30
+* res_len <= (2^32 - 1)
 
 === scrypt_to_string
 {{{
