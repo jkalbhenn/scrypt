@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <scrypt.h>
   //the expected default key and salt length is hardcoded here
-#define default_key_len 64u
+#define default_key_len 32u
 #define default_salt_len 16u
 
 void display_byte_array (uint8_t* arr, size_t len) {
@@ -92,11 +92,17 @@ char test_scrypt_to_string_base91 () {
   uint32_t p;
   //test setting of default values
   status = scrypt_to_string_base91("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
-  if (status) { return(status); }
+  if (status) {
+    printf("failure scrypt_to_string_base91_1 status %d\n", status);
+    return(0);
+  }
   scrypt_parse_string_base91(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
   uint8_t res_1 = ((N > 0) && (r == 8) && (p > 0) && (key_len == default_key_len) && (salt_len == default_salt_len));
   free(str); free(key); free(salt);
-  if (!res_1) { printf("failure scrypt_to_string_base91_1"); return (0); }
+  if (!res_1) {
+    printf("failure scrypt_to_string_base91_1 N %lu, r %x, p %x, salt-len %d, key-len %d default-key-len %d\n", N, r, p, salt_len, key_len, default_key_len);
+    return(0);
+  }
   //test non-default values
   status = scrypt_to_string_base91("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
   if (status) { return(status); }
