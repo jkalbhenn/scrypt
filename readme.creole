@@ -1,21 +1,19 @@
 A library and command-line utility for creating scrypt password key derivations. The programming language used is C.
 
-Open to contributions.
-
 == Status
-Should work on linux and all four reference tests of the scrypt ietf draft pass successfully.
+Should work on linux and all four reference tests of the scrypt IETF draft pass successfully.
 
 Possible enhancements
-* Testing
+* User testing
 * Portability
-* Checking arguments for validity
+* More checks for input validity
 
 == Installation
 # ./build/make+install.sh [target-prefix]
 
-* Installs a library under {prefix}/usr/lib/libscrypt.so
-* Installs a header file under {prefix}/usr/include/scrypt.h
-* Installs a binary under {prefix}/usr/bin/scrypt-kdf
+* Installs a library under {target-prefix}/usr/lib/libscrypt.so
+* Installs a header file under {target-prefix}/usr/include/scrypt.h
+* Installs a binary under {target-prefix}/usr/bin/scrypt-kdf
 
 == Command-line interface
 {{{
@@ -30,10 +28,10 @@ options
 }}}
 
 * Defaults for a parameter are used with the minus character -
-* "size" and "salt-size" define the number of bits and must be divisible by 8
+* "size" and "salt-size" are only used if password or salt are left out or set to "-". They specify a number of bits and must be divisible by 8
 
 === Examples
-Create a hash with random salt from /dev/urandom and cost values estimated from system performance.
+Create a hash with random salt from /dev/urandom and estimated cost values
 {{{
 scrypt-kdf testpassword
 }}}
@@ -88,7 +86,7 @@ $7$C6..../....testsalt$8iWefERUpfDgs0B1s2CCn0flMHOLqzCNVMn0AwxoEM8
 * Key length 256
 * Salt length 128
 * Salt read from /dev/urandom
-* (N r p) parameters estimated by testing cpuspeed and free memory
+* (N r p) parameters estimated by checking cpuspeed and free memory
 
 == Structure
 {{{
