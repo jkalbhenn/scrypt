@@ -1,7 +1,7 @@
 A library and command-line utility for creating scrypt password key derivations. The programming language used is C.
 
 == Status
-Should work on linux and all four reference tests of the scrypt IETF draft pass successfully.
+Should work on linux and all four reference tests of the [scrypt IETF draft](http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt) pass successfully.
 
 Possible enhancements
 * User testing
