@@ -1,4 +1,4 @@
-#the binary scrypt-kdf depends on libscrypt, so libscrypt is build and installed first, then scrypt-kdf
+# the binary scrypt-kdf depends on libscrypt, so libscrypt is build and installed first, then scrypt-kdf
 
 exit_on_error() {
   $* || exit 1
