@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <scrypt.h>
-  //the expected default key and salt length is hardcoded here
+
+//the default key and salt length is hardcoded here
 #define default_key_len 32u
 #define default_salt_len 16u
 

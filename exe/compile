@@ -1,0 +1,24 @@
+#!/bin/sh
+
+gcc="gcc -O3"
+
+exit_on_error() {
+  $* || exit 1
+}
+
+compile_libscrypt() {
+  path_scrypt=source/derivations/scrypt
+  path_libcperciva="$path_scrypt/libcperciva"
+  include_paths="-I $path_scrypt -I $path_scrypt/lib -I $path_scrypt/lib/crypto -I $path_scrypt/lib/util -I $path_scrypt/lib/scryptenc"
+  include_paths="$include_paths -I $path_libcperciva/alg -I $path_libcperciva/cpusupport -I $path_libcperciva/crypto -I $path_libcperciva/util"
+  # "-lm" links the standard "math" library
+  exit_on_error $gcc -shared -fPIC -lm $include_paths -o temp/libscrypt.so source/scrypt.c
+}
+
+compile_scrypt_kdf() {
+  exit_on_error $gcc --std=c11 -L./temp -lscrypt source/cli.c -o temp/scrypt-kdf
+}
+
+mkdir -p temp
+compile_libscrypt
+compile_scrypt_kdf

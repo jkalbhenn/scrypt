@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# usage: ./exe/install [path-prefix]
+
+prefix=$1
+
+exit_on_error() {
+  $* || exit 1
+}
+
+install_libscrypt() {
+  exit_on_error install -m 644 -D temp/libscrypt.so $prefix/usr/lib/libscrypt.so
+  exit_on_error install -m 644 -D source/scrypt.h $prefix/usr/include/scrypt.h
+}
+
+install_scrypt_kdf() {
+  n=scrypt-kdf
+  exit_on_error install -m 755 -D temp/$n $prefix/usr/bin/$n
+}
+
+install_libscrypt
+install_scrypt_kdf

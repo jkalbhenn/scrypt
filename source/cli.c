@@ -1,6 +1,6 @@
 /* scrypt-utility command-line interface.
 
-   copyright 2013 Julian Kalbhenn <jkal@posteo.eu>
+   copyright 2013-2016 Julian Kalbhenn <jkal@posteo.eu>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -21,11 +21,10 @@
 #include <string.h>
 #include <getopt.h>
 #include "scrypt.h"
-#include "base91/base91.c"
+#include "../foreign/base91/base91.c"
 #include "shared.c"
-#include "error.h"
 
-#define version "0.2"
+#define version "0.3"
 
 void display_help () {
   puts(
@@ -86,7 +85,7 @@ int main (int argc, char **argv) {
   uint32_t r = 0;
   uint32_t p = 0;
 
-  //-- input --//
+  //-- input
   //argument 1
   if (optind < argc) {
     if (use_base91_input) {
@@ -140,7 +139,7 @@ int main (int argc, char **argv) {
 
 #define require_success(status) if (status) { puts(scrypt_strerror(status)); return(status); }
 
-  //-- output --//
+  //-- output
   uint8_t* res;
   size_t res_len;
   uint32_t status;

@@ -3,13 +3,8 @@ A library and command-line utility for creating scrypt password key derivations.
 # Status
 Should work on linux and all four reference tests of the [scrypt IETF draft](http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt) pass successfully.
 
-Possible enhancements
-* User testing
-* Portability
-* More checks for input validity
-
 # Installation
-# ./build/make+install.sh [target-prefix]
+# ./exe/compile && ./exe/install [target-prefix]
 
 * Installs a library under {target-prefix}/usr/lib/libscrypt.so
 * Installs a header file under {target-prefix}/usr/include/scrypt.h
@@ -31,35 +26,27 @@ options
 * "size" and "salt-size" are only used if password or salt are left out or set to "-". They specify a number of bits and must be divisible by 8
 
 ## Examples
-Create a hash with random salt from /dev/urandom and estimated cost values
+Create a hash with random salt from /dev/urandom and estimated cost values:
 ```
 scrypt-kdf testpassword
 ```
 
-Custom values for salt and other parameters
+Custom values for salt and other parameters:
 ```
 scrypt-kdf testpassword testsalt 16384 8 1 256
 ```
 
-Testing if a hash corresponds to a password
+Testing if a hash corresponds to a password:
 ```
 scrypt-kdf testpassword -c 'qgr]R7~eLs(?Q2$T"*)P%xYbqQq(!PDT@hL|;L7D-fPNKS[7*qU-OA-IA-BA'
 success
 ```
 
-Using a 128 bit key with a 64 bit random salt and defaults for other parameters.
+Always use single quotes around base91 hashes on the command-line, since the hash might contain special characters that are interpreted by the shell, even inside double quotes.
+
+Using a 128 bit key with a 64 bit random salt and defaults for other parameters:
 ```
 scrypt-kdf testpassword - - - - - 128 64
-```
-
-## Advanced (not implemented)
-* Read binary password from file or stdin
-* Read binary salt from file
-* Write to file or stdout
-```
-  -i|inputfile
-  -s|saltfile
-  -o|outfile
 ```
 
 # Output format
@@ -105,19 +92,21 @@ scrypt
 * Setup linking with "libscrypt"
 
 ## scrypt
+The fundamental scrypt key derivation function.
+
 ```
 int scrypt (
   const uint8_t * password, size_t password_len, const uint8_t * salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, uint8_t * res, size_t res_len);
 ```
 
-The fundamental scrypt key derivation function.
-
 * N must be a power of 2
 * r * p < 2^30
 * res_len <= (2^32 - 1)
 
 ## scrypt_to_string
+Creates a hash string like the command-line utility.
+
 ```
 uint32_t scrypt_to_string_base91 (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
@@ -129,8 +118,6 @@ uint32_t scrypt_to_string_crypt (
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len);
 ```
-
-Creates a hash string like the command-line utility.
 
 ## Example call
 ```
@@ -176,32 +163,37 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 ```
 
 # Sources
-Uses code from the "scrypt" file encryption utility written by C. Percival, the scrypt algorithm by the same author, a base64 implementation by Alexander Peslyak, and the base91 implementation by Joachim Henke.
+Uses code from the "scrypt" file encryption utility written by C. Percival and the scrypt algorithm by the same author, a unix crypt compatible base64 implementation by Alexander Peslyak, and the base91 implementation by Joachim Henke.
 
 # License
-* Base91 implementation - bsd 3-clause
-* Scrypt implementation and utility code - bsd 2-clause
-* Base64 implementation - see source file "crypt_base64.c"
+* [Base91 implementation](http://base91.sourceforge.net/) - version 0.6.0 - bsd 3-clause
+* [Scrypt implementation and utility code](http://www.tarsnap.com/scrypt.html) - version 1.2.0 - bsd 2-clause
+* Base64 implementation - custom, see source file "crypt_base64.c"
 * Rest - lgpl3+
 
 # Rationale
 ## Field order
-* When creating the string, it seems more intuitive to start with the parameters, salt and password, but when reading the reverse order seems better.
-  One may think of it like this: you want to create a key derivation, and the first and most prominent thing you get is the actual key derivation. In that sense it is in order of most significant to least significant (when reading from left to right)
-* A program may use the output-string to split the key and salt and use fixed (N r p) values. Or it may use only the key, and store the salt and other values somewhere else. So the algorithm would be: take chars until the first dash, got password, take the rest; without fixed length fields.
-* Key and salt have the most predictable length, because of having common power of two lengths, and the parameters may have a length based on environment state
+* When creating the string, it might seem more intuitive to start with the parameters, salt and password, but when reading the string the reverse order seems better.
+One may think of it like this: the user wants to create a key derivation, and the first and most prominent thing they get in the result is the actual key derivation, then the parameters at the end. In that sense it is in order of most significant to least significant when reading from left to right
+* Key and salt have a more predictable length than the other parts, which are more dependent on environment state
+* A program using the library may only be interested in the the key, while keeping track of the parameters somewhere else. It should then be easier to extract the key from the beginning
 
 ## Field separator
-* Don't use a cryptic symbol if a less cryptic and more common symbol does the job, for example prefering - over $
+* Don't use a cryptic symbol if a less cryptic and more common symbol does the job, for example with preferring "-" over "$"
 * Base91 leaves "-" for use
 
 ## Base91
-* Enables the use of the full binary range for password and salt on the command-line
-* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set - ' \
-* It is incompatible with the /etc/passwd format because it uses :
+* Enables the use of the full binary range for specifying a password and salt on the command-line, not just the ascii character range, because it is an encoding
+* Result strings are shorter than they would be with base64
+* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set "-", "'" "\"
+* The base91 encoding is a bit more straightforward because it has only one standard definition, and not multiple historical variants (padding et cetera) like base64
+* It is not compatible with the format used in the /etc/passwd file because it uses ":". Base64 can be used in that case
 
-# Original scrypt utility
-This interface could be combined with the original scrypt file encryption utility, for example by writing a wrapper or extending the library with file encryption features.
+Possible enhancements
+* User testing
+* Improved command-line interface
+* Portability
+* More input/output options
 
 # External links
 * http://base91.sourceforge.net/
