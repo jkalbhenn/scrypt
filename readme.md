@@ -3,8 +3,8 @@ A library and command-line utility for creating scrypt password key derivations.
 # Status
 Should work on linux and all four reference tests of the [scrypt IETF draft](http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt) pass successfully.
 
-# Installation
-## Installation requirements
+# Setup
+## Requirements
 The provided compile script uses shell and "gcc", and the code depends on the C standard library, "glibc" for example. All other dependencies are included.
 
 ## Compilation and installation
