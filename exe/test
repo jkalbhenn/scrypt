@@ -1,1 +1,2 @@
+#!/bin/sh
 gcc -lscrypt --std=c11 source/test.c -o temp/test && temp/test
