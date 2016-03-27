@@ -4,7 +4,13 @@ A library and command-line utility for creating scrypt password key derivations.
 Should work on linux and all four reference tests of the [scrypt IETF draft](http://tools.ietf.org/id/draft-josefsson-scrypt-kdf-01.txt) pass successfully.
 
 # Installation
-# ./exe/compile && ./exe/install [target-prefix]
+## Installation requirements
+The provided compile script uses shell and "gcc", and the code depends on the C standard library, "glibc" for example. All other dependencies are included.
+
+## Compilation and installation
+```
+./exe/compile && ./exe/install [target-prefix]
+```
 
 * Installs a library under {target-prefix}/usr/lib/libscrypt.so
 * Installs a header file under {target-prefix}/usr/include/scrypt.h
