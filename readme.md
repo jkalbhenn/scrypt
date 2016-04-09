@@ -5,7 +5,7 @@ Should work on linux and all four reference tests of the [scrypt IETF draft](htt
 
 # Setup
 ## Requirements
-The provided compile script uses shell and "gcc", and the code depends on the C standard library, "glibc" for example. All other dependencies are included.
+The provided compile script uses shell and "GCC", and the code depends on the C standard library, "glibc" for example. All other dependencies are included.
 
 ## Compilation and installation
 ```
@@ -81,7 +81,7 @@ $7$C6..../....testsalt$8iWefERUpfDgs0B1s2CCn0flMHOLqzCNVMn0AwxoEM8
 * Salt read from /dev/urandom
 * (N r p) parameters estimated by checking cpuspeed and free memory
 
-# Structure
+# Library overview
 ```
 libscrypt
   scrypt
@@ -89,21 +89,20 @@ libscrypt
   scrypt_set_defaults
   scrypt_to_string
   scrypt_strerror
-scrypt
 ```
 
 # Programming interface
 ## Usage
-* When using C, "#include <scrypt.h>"
-* Setup linking with "libscrypt"
+* Include the header file, with C: `#include <scrypt.h>`
+* Compile with linking to "libscrypt", with GCC: `-lscrypt`
 
 ## scrypt
 The fundamental scrypt key derivation function.
 
 ```
-int scrypt (
-  const uint8_t * password, size_t password_len, const uint8_t * salt, size_t salt_len,
-  uint64_t N, uint32_t r, uint32_t p, uint8_t * res, size_t res_len);
+int scrypt(
+  const uint8_t* password, size_t password_len, const uint8_t* salt, size_t salt_len,
+  uint64_t N, uint32_t r, uint32_t p, uint8_t* res, size_t res_len);
 ```
 
 * N must be a power of 2
@@ -114,13 +113,13 @@ int scrypt (
 Creates a hash string like the command-line utility.
 
 ```
-uint32_t scrypt_to_string_base91 (
+uint32_t scrypt_to_string_base91(
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, size_t size, uint8_t** res, size_t* res_len);
 ```
 
 ```
-uint32_t scrypt_to_string_crypt (
+uint32_t scrypt_to_string_crypt(
   uint8_t* password, size_t password_len, uint8_t* salt, size_t salt_len,
   uint64_t N, uint32_t r, uint32_t p, uint8_t** res, size_t* res_len);
 ```
@@ -144,10 +143,10 @@ status = scrypt_to_string_base91(password, password_len, salt, salt_len, N, r, p
 
 ## scrypt_parse_string
 ```
-int scrypt_parse_string_base91 (uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
+int scrypt_parse_string_base91(uint8_t* arg, size_t arg_len, uint8_t** key, size_t* key_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
 ```
 ```
-int scrypt_parse_string_crypt (uint8_t* arg, size_t arg_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
+int scrypt_parse_string_crypt(uint8_t* arg, size_t arg_len, uint8_t** salt, size_t* salt_len, uint64_t* N, uint32_t* r, uint32_t* p);
 ```
 
 ## Example call
@@ -158,7 +157,7 @@ status = scrypt_parse_string_base91(check_string, strlen(check_string), &key, &k
 
 ## scrypt_set_defaults
 ```
-int scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p);
+int scrypt_set_defaults(uint8_t** salt, size_t* salt_len, size_t* size, uint64_t* N, uint32_t* r, uint32_t* p);
 ```
 
 Variables with the value of zero are updated with defaults.
