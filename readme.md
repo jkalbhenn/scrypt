@@ -190,7 +190,7 @@ One may think of it like this: the user wants to create a key derivation, and th
 ## Base91
 * Enables the use of the full binary range for specifying a password and salt on the command-line, not just the ascii character range, because it is an encoding
 * Result strings are shorter than they would be with base64
-* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaving three useful characters out of the set "-", "'" "\"
+* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaves three useful characters out of the set "-", "'" "\"
 * The base91 encoding is a bit more straightforward because it has only one standard definition, and not multiple historical variants (padding et cetera) like base64
 * It is not compatible with the format used in the /etc/passwd file because it uses ":". Base64 can be used in that case
 
