@@ -2,6 +2,8 @@
 
 gcc="gcc -O3"
 
+prefix=$1
+
 exit_on_error() {
   $* || exit 1
 }
@@ -16,7 +18,8 @@ compile_libscrypt() {
 }
 
 compile_scrypt_kdf() {
-  exit_on_error $gcc source/cli.c -o temp/scrypt-kdf --std=c11 -L./temp -lscrypt -lm
+  ld_flags="-Wl,-rpath,$prefix/usr/lib"
+  exit_on_error $gcc source/cli.c $ld_flags -o temp/scrypt-kdf --std=c11 -L./temp -lscrypt -lm
 }
 
 mkdir -p temp
