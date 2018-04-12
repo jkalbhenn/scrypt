@@ -9,7 +9,7 @@ The provided compile script uses shell and "GCC", and the code depends on the C 
 
 ## Compilation and installation
 ```
-./exe/compile && ./exe/install [target-prefix]
+./exe/compile [target-prefix] && ./exe/install [target-prefix]
 ```
 
 * Installs a library under {target-prefix}/usr/lib/libscrypt.so
