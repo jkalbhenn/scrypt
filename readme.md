@@ -172,30 +172,30 @@ Uses code from the "scrypt" file encryption utility written by C. Percival and t
 
 # License
 * [Base91 implementation](http://base91.sourceforge.net/) - version 0.6.0 - bsd 3-clause
-* [Scrypt implementation and utility code](http://www.tarsnap.com/scrypt.html) - version 1.2.0 - bsd 2-clause
+* [Scrypt implementation and utility code](http://www.tarsnap.com/scrypt.html) - version 1.2.1 - bsd 2-clause
 * Base64 implementation - custom, see source file "crypt_base64.c"
 * Rest - lgpl3+
 
+# Updates
+The code for the scrypt algorithm is copied from the [scrypt](http://www.tarsnap.com/scrypt.html) password-based encryption utility that is available as a demonstration of the scrypt key derivation function. For recent updates the source archive for the scrypt encryption utility was downloaded and unpacked, "./configure" was run in the unpacked directory to create the needed config.h file, and relevant files were extracted and copied into source/derivations/scrypt.
+
 # Rationale
 ## Field order
-* When creating the string, it might seem more intuitive to start with the parameters, salt and password, but when reading the string the reverse order seems better.
-One may think of it like this: the user wants to create a key derivation, and the first and most prominent thing they get in the result is the actual key derivation, then the parameters at the end. In that sense it is in order of most significant to least significant when reading from left to right
-* Key and salt have a more predictable length than the other parts, which are more dependent on environment state
+* When creating the string, it might seem more intuitive to start with the parameters, salt and password. But when reading the string, the reverse order seems more useful. One may think of it like this: the user wants to create a key derivation and the first and most prominent (because it is right at the beginning of the string) thing they get is the key derivation, then the parameters used to create it at the end of the string
+* Key and salt have a more predictable length than the other parts, which are more dependent on the environment
 * A program using the library may only be interested in the the key, while keeping track of the parameters somewhere else. It should then be easier to extract the key from the beginning
 
 ## Field separator
-* Don't use a cryptic symbol if a less cryptic and more common symbol does the job, for example with preferring "-" over "$"
 * Base91 leaves "-" for use
 
 ## Base91
 * Enables the use of the full binary range for specifying a password and salt on the command-line, not just the ascii character range, because it is an encoding
 * Result strings are shorter than they would be with base64
-* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and leaves three useful characters out of the set "-", "'" "\"
-* The base91 encoding is a bit more straightforward because it has only one standard definition, and not multiple historical variants (padding et cetera) like base64
+* Base91 seems reasonably well defined - efficient because it uses nearly all of asciis 94 printable characters, and it leaves three useful characters out of the set "-", "'" "\\"
+* The base91 encoding is a bit more straightforward because it has only one standard definition and not multiple historical variants (padding et cetera) like base64
 * It is not compatible with the format used in the /etc/passwd file because it uses ":". Base64 can be used in that case
 
 Possible enhancements
-* User testing
 * Improved command-line interface
 * Portability
 * More input/output options
@@ -207,7 +207,7 @@ Possible enhancements
 * http://code.google.com/p/scrypt/
 * https://www.gitorious.org/scrypt/scrypt-unix-crypt/blobs/raw/master/unix-scrypt.txt
 
-## A few interesting scrypt projects
+## Other interesting scrypt projects
 * http://git.chromium.org/gitweb/?p=chromiumos/third_party/libscrypt.git;a=summary
 * https://github.com/scintill/scrypt
 * https://pypi.python.org/pypi/scrypt/

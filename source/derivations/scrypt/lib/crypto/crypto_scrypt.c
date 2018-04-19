@@ -37,14 +37,10 @@
 #include <string.h>
 
 #include "cpusupport.h"
-//#include "sha256.h"
 #include "sha256.c"
-//#include "warnp.h"
 #include "warnp.c"
 
-#include "crypto_scrypt_smix.h"
 #include "crypto_scrypt_smix.c"
-#include "crypto_scrypt_smix_sse2.h"
 #include "crypto_scrypt_smix_sse2.c"
 
 #include "crypto_scrypt.h"
@@ -101,7 +97,7 @@ _crypto_scrypt(const uint8_t * passwd, size_t passwdlen,
 		goto err1;
 	XY = (uint32_t *)(XY0);
 #if !defined(MAP_ANON) || !defined(HAVE_MMAP)
-	if ((errno = posix_memalign(&V0, 64, 128 * r * N)) != 0)
+	if ((errno = posix_memalign(&V0, 64, (size_t)(128 * r * N))) != 0)
 		goto err2;
 	V = (uint32_t *)(V0);
 #endif

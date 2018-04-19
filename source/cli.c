@@ -1,6 +1,6 @@
 /* scrypt-utility command-line interface.
 
-   copyright 2013-2016 Julian Kalbhenn <jkal@posteo.eu>
+   copyright 2013-2018 Julian Kalbhenn <jkal@posteo.eu>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -24,7 +24,7 @@
 #include "../foreign/base91/base91.c"
 #include "shared.c"
 
-#define version "0.3"
+#define version "0.4"
 
 void display_help () {
   puts(
@@ -86,7 +86,7 @@ int main (int argc, char **argv) {
   uint32_t p = 0;
 
   //-- input
-  //argument 1
+  // argument 1
   if (optind < argc) {
     if (use_base91_input) {
       password = malloc(strlen(argv[optind]));
@@ -97,7 +97,7 @@ int main (int argc, char **argv) {
       password_len = strlen(argv[optind]);
     }
     optind += 1;
-    //argument 2
+    // argument 2
     if (!check_string && (optind < argc)) {
       if (*argv[optind] == '-') { salt = 0; salt_len = 0; }
       else if (use_base91_input) {
@@ -109,19 +109,19 @@ int main (int argc, char **argv) {
 	salt_len = strlen(argv[optind]);
       }
       optind += 1;
-      //argument 3
+      // argument 3
       if (optind < argc) {
 	N = atol(argv[optind]); optind += 1;
-	//argument 4
+	// argument 4
 	if (optind < argc) {
 	  r = atoi(argv[optind]); optind += 1;
-	  //argument 5
+	  // argument 5
 	  if (optind < argc) {
 	    p = atoi(argv[optind]); optind += 1;
-	    //argument 6
+	    // argument 6
 	    if (optind < argc) {
 	      size = atol(argv[optind]) / 8; optind += 1;
-	      //argument 7
+	      // argument 7
 	      if (!salt && (optind <= argc)) {
 		salt_len = atoi(argv[optind]) / 8;
 	      }

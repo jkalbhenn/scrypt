@@ -7,14 +7,14 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the `rt' library (-lrt). */
-#define HAVE_LIBRT 1
-
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mmap' function. */
 #define HAVE_MMAP 1
+
+/* Define to 1 if you have the <openssl/aes.h> header file. */
+#define HAVE_OPENSSL_AES_H 1
 
 /* Define to 1 if you have the `posix_memalign' function. */
 #define HAVE_POSIX_MEMALIGN 1
@@ -65,28 +65,28 @@
 #define PACKAGE "scrypt"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT ""
+#define PACKAGE_BUGREPORT "https://github.com/Tarsnap/scrypt"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "scrypt"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "scrypt 1.2.0"
+#define PACKAGE_STRING "scrypt 1.2.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "scrypt"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL ""
+#define PACKAGE_URL "http://www.tarsnap.com/scrypt/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.2.0"
+#define PACKAGE_VERSION "1.2.1"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.2.0"
+#define VERSION "1.2.1"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

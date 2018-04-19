@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <scrypt.h>
 
-//the default key and salt length is hardcoded here
+// the default key and salt length is hardcoded here
 #define default_key_len 32u
 #define default_salt_len 16u
 
@@ -91,10 +91,10 @@ char test_scrypt_to_string_base91 () {
   uint64_t N;
   uint32_t r;
   uint32_t p;
-  //test setting of default values
+  // test setting of default values
   status = scrypt_to_string_base91("", 0, 0, 0, 0, 0, 0, 0, &str, &str_len);
   if (status) {
-    printf("failure scrypt_to_string_base91_1 status %d\n", status);
+    printf("failure scrypt_to_string_base91_1: set default values. status %d\n", status);
     return(0);
   }
   scrypt_parse_string_base91(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
@@ -104,7 +104,7 @@ char test_scrypt_to_string_base91 () {
     printf("failure scrypt_to_string_base91_1 N %lu, r %x, p %x, salt-len %d, key-len %d default-key-len %d\n", N, r, p, salt_len, key_len, default_key_len);
     return(0);
   }
-  //test non-default values
+  // test non-default values
   status = scrypt_to_string_base91("pleaseletmein", 13, "SodiumChloride", 14, 16384, 8, 1, 64, &str, &str_len);
   if (status) { return(status); }
   scrypt_parse_string_base91(str, str_len, &key, &key_len, &salt, &salt_len, &N, &r, &p);
@@ -126,7 +126,7 @@ char test_scrypt_to_string_base91 () {
 }
 
 void main () {
-  if (test_scrypt_to_string_base91() && test_1() && test_2() && test_3() && test_4()) {
+  if (test_1() && test_2() && test_3() && test_4() && test_scrypt_to_string_base91()) {
     printf("%s\n", "success - all tests passed.");
   }
 }

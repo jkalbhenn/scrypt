@@ -1,6 +1,6 @@
 /* scrypt-utility library code.
 
-   copyright 2013-2016 Julian Kalbhenn <jkal@posteo.eu>
+   copyright 2013-2018 Julian Kalbhenn <jkal@posteo.eu>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -22,18 +22,17 @@
 #include <stdio.h>
 #include "../foreign/crypt_base64.c"
 #include "../foreign/base91/base91.c"
-#include "scryptenc.c"
+#include "crypto_scrypt.c"
+#include "pickparams/pickparams.c"
 #include "shared.c"
 
 #define error_invalid_hash_format 2
 
 int scrypt(const uint8_t * passwd, size_t passwdlen,
     const uint8_t * salt, size_t saltlen, uint64_t N, uint32_t _r, uint32_t _p,
-    uint8_t * buf, size_t buflen)
-{
+    uint8_t * buf, size_t buflen) {
   crypto_scrypt(passwd, passwdlen, salt, saltlen, N, _r, _p, buf, buflen);
 }
-
 
 uint8_t* scrypt_strerror (uint32_t n) {
   return(error_invalid_hash_format == n ? "invalid hash format" :
@@ -54,7 +53,7 @@ uint32_t scrypt_set_defaults (uint8_t** salt, size_t* salt_len, size_t* size, ui
     int logN;
     uint32_t default_r;
     uint32_t default_p;
-    status = pickparams(0, 0.5, 3.0, &logN, &default_r, &default_p); if (status) { return(status); }
+    status = pickparams(0, 0.5, 3.0, &logN, &default_r, &default_p, 0); if (status) { return(status); }
     if (!*N) { *N = (uint64_t)(1) << logN; }
     if (!*r) { *r = default_r; }
     if (!*p) { *p = default_p; }
@@ -138,7 +137,7 @@ uint32_t scrypt_parse_string_crypt (const uint8_t* arg, size_t arg_len, uint8_t*
   }
   uint32_t logN = 0;
   size_t index = arg_len;
-  //crypt format-identifier (3 chars) + parameters (11 chars) + salt (non-limited size) + password (43 chars)
+  // crypt format-identifier (3 chars) + parameters (11 chars) + salt (non-limited size) + password (43 chars)
   while (index >= 14) {
     if (*(arg + index) == '$') {
       *salt_len = index - 14;
@@ -164,7 +163,7 @@ uint32_t scrypt_to_string_crypt (
   status = scrypt_set_defaults(&salt, &salt_len, &key_len, &N, &r, &p);
   if (status) { return(status); }
   if (use_default_salt) {
-    //base64-encode the random bytes generated for the salt
+    // base64-encode the random bytes generated for the salt
     uint8_t* salt_base64 = malloc(salt_len); if (!salt_base64) { return(1); }
     encode64(salt_base64, salt_len, salt, salt_len);
     free(salt);
@@ -183,9 +182,7 @@ uint32_t scrypt_to_string_crypt (
   *res_p = itoa64[logN];
   res_p = encode64_uint32(res_p + 1, estimated_len - (res_p - *res), r, 30);
   res_p = encode64_uint32(res_p, estimated_len - (res_p - *res), p, 30);
-
   memcpy(res_p, salt, salt_len);
-
   res_p += salt_len;
   *res_p = '$';
   res_p = encode64(res_p + 1, estimated_len - (res_p - *res), derived_key, key_len);
