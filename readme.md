@@ -177,13 +177,13 @@ Uses code from the "scrypt" file encryption utility written by C. Percival and t
 * Rest - lgpl3+
 
 # Updates
-The code for the scrypt algorithm is copied from the [scrypt](http://www.tarsnap.com/scrypt.html) password-based encryption utility that is available as a demonstration of the scrypt key derivation function. For recent updates the source archive for the scrypt encryption utility was downloaded and unpacked, "./configure" was run in the unpacked directory to create the needed config.h file, and relevant files were extracted and copied into source/derivations/scrypt. the only necessary edits to the files were changing .h to .c for some #includes and extracting code for the pickparams routine into the new file pickparams.c to be able to use this functionality with fewer dependencies.
+The code for the scrypt algorithm is copied from the official [scrypt](http://www.tarsnap.com/scrypt.html) password-based encryption utility that is available as a demonstration of the scrypt key derivation function. For recent updates the source archive for the scrypt encryption utility was downloaded and unpacked, "./configure" was run in the unpacked directory to create the needed config.h file, and relevant files were extracted and copied into source/derivations/scrypt. the only necessary edits to the files were changing .h to .c for some #includes and extracting code for the pickparams routine into the new file pickparams.c to be able to use this functionality with fewer dependencies.
 
 # Rationale
 ## Field order
 * When creating the string, it might seem more intuitive to start with the parameters, salt and password. But when reading the string, the reverse order seems more useful. One may think of it like this: the user wants to create a key derivation and the first and most prominent (because it is right at the beginning of the string) thing they get is the key derivation, then the parameters used to create it at the end of the string
 * Key and salt have a more predictable length than the other parts, which are more dependent on the environment
-* A program using the library may only be interested in the the key, while keeping track of the parameters somewhere else. It should then be easier to extract the key from the beginning
+* A program using the library may only be interested in the key, while keeping track of the parameters somewhere else. It should then be easier to extract the key from the beginning
 
 ## Field separator
 * Base91 leaves "-" for use
