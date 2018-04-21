@@ -177,7 +177,7 @@ Uses code from the "scrypt" file encryption utility written by C. Percival and t
 * Rest - lgpl3+
 
 # Updates
-The code for the scrypt algorithm is copied from the [scrypt](http://www.tarsnap.com/scrypt.html) password-based encryption utility that is available as a demonstration of the scrypt key derivation function. For recent updates the source archive for the scrypt encryption utility was downloaded and unpacked, "./configure" was run in the unpacked directory to create the needed config.h file, and relevant files were extracted and copied into source/derivations/scrypt.
+The code for the scrypt algorithm is copied from the [scrypt](http://www.tarsnap.com/scrypt.html) password-based encryption utility that is available as a demonstration of the scrypt key derivation function. For recent updates the source archive for the scrypt encryption utility was downloaded and unpacked, "./configure" was run in the unpacked directory to create the needed config.h file, and relevant files were extracted and copied into source/derivations/scrypt. the only necessary edits to the files were changing .h to .c for some #includes and extracting code for the pickparams routine into the new file pickparams.c to be able to use this functionality with fewer dependencies.
 
 # Rationale
 ## Field order
