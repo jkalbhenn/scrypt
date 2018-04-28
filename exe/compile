@@ -10,8 +10,8 @@ exit_on_error() {
 
 compile_libscrypt() {
   path_scrypt=source/derivations/scrypt
+  include_paths="-I $path_scrypt -I $path_scrypt/lib/crypto -I $path_scrypt/lib/util"
   path_libcperciva="$path_scrypt/libcperciva"
-  include_paths="-I $path_scrypt -I $path_scrypt/lib -I $path_scrypt/lib/crypto -I $path_scrypt/lib/util -I $path_scrypt/lib/scryptenc"
   include_paths="$include_paths -I $path_libcperciva/alg -I $path_libcperciva/cpusupport -I $path_libcperciva/crypto -I $path_libcperciva/util"
   # "-lm" links the standard "math" library
   exit_on_error $gcc -shared -fPIC -lm $include_paths -DHAVE_CONFIG_H -o temp/libscrypt.so source/scrypt.c
