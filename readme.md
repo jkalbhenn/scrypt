@@ -168,7 +168,7 @@ status = scrypt_set_defaults(&salt, &salt_len, &size, &N, &r, &p);
 ```
 
 # Sources
-Uses code from the "scrypt" file encryption utility written by C. Percival and the scrypt algorithm by the same author, a unix crypt compatible base64 implementation by Alexander Peslyak, and the base91 implementation by Joachim Henke.
+Uses code from the "scrypt" file encryption utility written by C. Percival and the scrypt algorithm by the same author, a unix crypt compatible base64 implementation by Alexander Peslyak and a base91 implementation by Joachim Henke.
 
 # License
 * [Base91 implementation](http://base91.sourceforge.net/) - version 0.6.0 - bsd 3-clause
@@ -181,7 +181,8 @@ The code for the scrypt algorithm is copied from the official [scrypt](http://ww
 
 # Rationale
 ## Field order
-* When creating the string, it might seem more intuitive to start with the parameters, salt and password. But when reading the string, the reverse order seems more useful. One may think of it like this: the user wants to create a key derivation and the first and most prominent (because it is right at the beginning of the string) thing they get is the key derivation, then the parameters used to create it at the end of the string
+* The parts of the output string are key-salt-logN-r-p
+* When creating the string, it might seem more intuitive to start with the parameters salt and password. But when reading the string, the reverse order seems more useful. One may think of it like this: the user wants to create a key derivation and the first and most prominent thing they get is the key derivation (it is right at the beginning of the string), then the parameters used to create it at the end of the string
 * Key and salt have a more predictable length than the other parts, which are more dependent on the environment
 * A program using the library may only be interested in the key, while keeping track of the parameters somewhere else. It should then be easier to extract the key from the beginning
 
@@ -195,10 +196,10 @@ The code for the scrypt algorithm is copied from the official [scrypt](http://ww
 * The base91 encoding is a bit more straightforward because it has only one standard definition and not multiple historical variants (padding et cetera) like base64
 * It is not compatible with the format used in the /etc/passwd file because it uses ":". Base64 can be used in that case
 
-Possible enhancements
+# Possible enhancements
 * Improved command-line interface
 * Portability
-* More input/output options
+* More input/output options (for example for binary from stdin)
 
 # External links
 * http://base91.sourceforge.net/
